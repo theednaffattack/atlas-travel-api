@@ -1,0 +1,13 @@
+{
+  "name": "atlas-travel-api",
+  "version": "1.0.0",
+  "description": "An API for a fake travel website.",
+  "main": "index.js",
+  "author": "Eddie Naff",
+  "license": "MIT",
+  "devDependencies": {
+    "nodemon": "^2.0.4",
+    "ts-node": "^8.10.2",
+    "typescript": "^3.9.7"
+  }
+}
