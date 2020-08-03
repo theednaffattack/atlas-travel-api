@@ -1,0 +1,21 @@
+{
+  "db": {
+    "connectionString": "postgresql://localhost/atlas_travel"
+  },
+  "outDir": "./src",
+  "srcMode": "copy",
+  "progressListener": false,
+  "warningListener": true,
+  "schemas": {
+    "public": {
+      "include": "*",
+      "exclude": [
+        "geography_columns",
+        "geometry_columns",
+        "raster_columns",
+        "raster_overviews",
+        "spatial_ref_sys"
+      ]
+    }
+  }
+}
