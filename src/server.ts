@@ -5,9 +5,7 @@ import {
   AuthenticationError,
 } from "apollo-server-express";
 import depthLimit from "graphql-depth-limit";
-import { createServer } from "http";
 import compression from "compression";
-import cors from "cors";
 import { GraphQLFormattedError } from "graphql/error/formatError";
 import { GraphQLError } from "graphql";
 import session from "express-session";
@@ -52,8 +50,6 @@ const getContextFromSubscription = (connection: any) => {
   return {
     userId,
     req: connection.context.req,
-    teamId: connection.context.teamId,
-    connectionName: "default",
   };
 };
 
@@ -63,8 +59,6 @@ let nodeEnvIsProd: boolean = process.env.NODE_ENV === "production";
 
 if (process.env.ATAPI_VIRTUAL_PORT) {
   port = parseInt(process.env.ATAPI_VIRTUAL_PORT, 10);
-
-  console.log("IF PROCESS.ENV.ATAPI_VIRTUAL_PORT", port);
 } else {
   port = 9000;
   console.log("ELSE", port);
@@ -86,7 +80,6 @@ const corsOptions: CorsOptionsProps = {
           `http://192.168.1.4:7000`,
         ]
       : [
-          `http://192.168.1.4:7000`,
           `http://localhost:3000`,
           `http://localhost:${port}`,
           `http://${homeIp}:3000`,
@@ -111,12 +104,6 @@ const corsOptions: CorsOptionsProps = {
   },
 };
 
-app.use("*", cors());
-
-app.use(compression());
-
-const httpServer = http.createServer(app);
-
 const apolloServer = new ApolloServer({
   schema,
   playground: { version: "1.7.25", endpoint: "/graphql" },
@@ -124,20 +111,9 @@ const apolloServer = new ApolloServer({
   context: ({ req, res, connection }: ExpressContext) => {
     if (connection) {
       return getContextFromSubscription(connection);
-      // return {
-      //   ...getContextFromSubscription(connection),
-      //   usersLoader: createUsersLoader()
-      // };
     }
 
     return getContextFromHttpRequest(req, res);
-
-    // return {
-    //   ...getContextFromHttpRequest(req, res),
-    //   usersLoader: createUsersLoader()
-    // };
-
-    // return { req, res, connection }
   },
   subscriptions: {
     path: "/subscriptions",
@@ -265,48 +241,6 @@ ${colors.green("atlas_travel server")}: ws://${homeIp}:${portUsed}${
 } else {
   throw "Environment variables are undefined.";
 }
-
-// needed to remove domain from our cookie
-// in non-production environments
-if (nodeEnvIsProd) {
-  sessionMiddleware = session({
-    name: "atg",
-    secret: process.env.SESSION_SECRET as string,
-    store: new RedisStore({
-      client: redis as any,
-      prefix: redisSessionPrefix,
-    }),
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-      httpOnly: true,
-      secure: true,
-      maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days,
-      domain: ".eddienaff.dev",
-    },
-  });
-} else {
-  sessionMiddleware = session({
-    name: "atg",
-    secret: process.env.SESSION_SECRET as string,
-    store: new RedisStore({
-      client: redis as any,
-      prefix: redisSessionPrefix,
-    }),
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-      httpOnly: true,
-      // secure: true,
-      maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days,
-      domain: `${homeIp}`,
-    },
-  });
-}
-
-app.use(sessionMiddleware);
-
-apolloServer.applyMiddleware({ app, cors: corsOptions });
 
 // ORIGINAL SERVER INIT
 // server.applyMiddleware({ app, path: "/graphql" });
