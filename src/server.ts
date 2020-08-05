@@ -220,6 +220,8 @@ app.use(sessionMiddleware);
 
 apolloServer.applyMiddleware({ app, cors: corsOptions });
 
+const httpServer = http.createServer(app);
+
 apolloServer.installSubscriptionHandlers(httpServer);
 
 // IMPORTED VERSION SERVER INIT
