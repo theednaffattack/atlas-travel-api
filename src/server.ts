@@ -120,7 +120,7 @@ const apolloServer = new ApolloServer({
   schema,
   playground: { version: "1.7.25", endpoint: "/graphql" },
   introspection: true,
-  context: ({ req, res, connection }: any) => {
+  context: ({ req, res, connection }: ExpressContext) => {
     if (connection) {
       return getContextFromSubscription(connection);
       // return {
