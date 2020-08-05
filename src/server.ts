@@ -21,6 +21,7 @@ import { redis } from "./redis";
 import { redisSessionPrefix } from "./constants";
 import schema from "./schema";
 import { MyContext } from "./typings";
+import { ExpressContext } from "apollo-server-express/dist/ApolloServer";
 
 interface CorsOptionsProps {
   credentials: boolean;
