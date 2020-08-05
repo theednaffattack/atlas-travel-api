@@ -40,8 +40,8 @@ const getContextFromHttpRequest = async (
   res: MyContext["res"]
 ) => {
   if (req && req.session) {
-    const { teamId, userId } = req.session;
-    return { userId, req, res, teamId, connectionName: "default" };
+    const { userId } = req.session;
+    return { userId, req, res };
   }
   return ["No session detected"];
 };
