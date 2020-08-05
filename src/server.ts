@@ -177,6 +177,49 @@ const apolloServer = new ApolloServer({
   validationRules: [depthLimit(7)],
 });
 
+// needed to remove domain from our cookie
+// in non-production environments
+if (nodeEnvIsProd) {
+  sessionMiddleware = session({
+    name: "atg",
+    secret: process.env.SESSION_SECRET as string,
+    store: new RedisStore({
+      client: redis as any,
+      prefix: redisSessionPrefix,
+    }),
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      httpOnly: true,
+      secure: true,
+      maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days,
+      domain: ".eddienaff.dev",
+    },
+  });
+} else {
+  sessionMiddleware = session({
+    name: "atg",
+    secret: process.env.SESSION_SECRET as string,
+    store: new RedisStore({
+      client: redis as any,
+      prefix: redisSessionPrefix,
+    }),
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      httpOnly: true,
+      // secure: true,
+      maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days,
+      domain: `${homeIp}`,
+    },
+  });
+}
+app.use(compression());
+
+app.use(sessionMiddleware);
+
+apolloServer.applyMiddleware({ app, cors: corsOptions });
+
 apolloServer.installSubscriptionHandlers(httpServer);
 
 // IMPORTED VERSION SERVER INIT
