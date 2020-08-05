@@ -2,3 +2,6 @@ node_modules
 
 # hide secrets
 .env
+
+# hide installer / package manager logs
+yarn-error.log
