@@ -62,6 +62,30 @@ type MessagesSubType = MessageInterface[] | null;
 
 export const resolvers: IResolvers = {
   Query: {
+    async getMyMessages(
+      _parent,
+      _args,
+      context: MyContext
+    ): Promise<MessagesSubType> {
+      try {
+        const messages = await db.sql<s.message.SQL, s.message.Selectable[]>`
+        SELECT * FROM ${"message"} WHERE ${"userId"} = ${db.param(
+          context.userId
+        )} OR ${"sentBy"} = ${db.param(context.userId)}
+        `.run(pool);
+
+        console.log("CAN I SEE MESSAGES\n", messages);
+
+        return messages;
+        // const theMessages = await db
+        //   .select("message", { userId: context.userId })
+        //   .run(pool);
+      } catch (error) {
+        // if (error instanceof db.NotExactlyOneError)
+        console.log(`${error.name}: ${error.message}`);
+        throw error;
+      }
+    },
     helloWorld(_: void, args: void): string {
       return `👋🏾 Hello world! 👋🏾`;
     },
@@ -94,30 +118,6 @@ export const resolvers: IResolvers = {
         if (err instanceof db.NotExactlyOneError)
           console.log(`${err.name}: ${err.message}`);
         else throw err;
-      }
-    },
-    async getMyMessages(
-      _parent,
-      _args,
-      context: MyContext
-    ): Promise<MessagesSubType> {
-      try {
-        const messages = await db.sql<s.message.SQL, s.message.Selectable[]>`
-        SELECT * FROM ${"message"} WHERE ${"userId"} = ${db.param(
-          context.userId
-        )} OR ${"sentBy"} = ${db.param(context.userId)}
-        `.run(pool);
-
-        console.log("CAN I SEE MESSAGES\n", messages);
-
-        return messages;
-        // const theMessages = await db
-        //   .select("message", { userId: context.userId })
-        //   .run(pool);
-      } catch (error) {
-        // if (error instanceof db.NotExactlyOneError)
-        console.log(`${error.name}: ${error.message}`);
-        throw error;
       }
     },
   },
