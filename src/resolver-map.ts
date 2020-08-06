@@ -80,7 +80,12 @@ export const resolvers: IResolvers = {
       }
 
       try {
-        const getMyDetails = await db.selectOne("user", { id: context.userId }).run(pool);
+        let getMyDetails;
+        if (process.env.NODE_ENV === "test") {
+          getMyDetails = await db.selectOne("user", { id: context.req.session?.userId }).run(pool);
+        } else {
+          getMyDetails = await db.selectOne("user", { id: context.userId }).run(pool);
+        }
         // ... do something with this user ...
 
         if (!getMyDetails) {
