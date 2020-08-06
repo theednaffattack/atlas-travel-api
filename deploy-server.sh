@@ -12,3 +12,4 @@ yarn build:server
 docker build -t theednaffattack/atapi-dot-eddienaff-dot-dev:prod .
 docker push theednaffattack/atapi-dot-eddienaff-dot-dev:prod
 ssh eddie@198.199.116.64 "cd at-api && docker-compose pull && docker-compose up -d"
+
