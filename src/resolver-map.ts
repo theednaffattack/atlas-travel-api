@@ -8,6 +8,7 @@ import * as s from "./zapatos/schema";
 import pool from "./pg-pool";
 import { MyContext } from "./typings";
 import { transaction } from "./zapatos/src";
+import { MyContext } from "./typings";
 import { AuthenticationError } from "apollo-server-express";
 
 interface LoginArgs {
@@ -15,18 +16,10 @@ interface LoginArgs {
   password: string;
 }
 
-const highlighterOptions = {
-  html: false,
-  classPrefix: "sql-hl-",
-  colors: {
-    keyword: "\x1b[35m",
-    function: "\x1b[31m",
-    number: "\x1b[32m",
-    string: "\x1b[32m",
-    special: "\x1b[33m",
-    bracket: "\x1b[33m",
-  },
-};
+export interface QuerySentInterface {
+  text: string;
+  values: (string | number)[];
+}
 
 function createNameField({ firstName, lastName }: { firstName: string; lastName: string }): string {
   return firstName + " " + lastName;
@@ -118,7 +111,7 @@ export const resolvers: IResolvers = {
         // START - logging
 
         await db.setConfig({
-          queryListener: (argThing) => {
+          queryListener: (argThing: QuerySentInterface) => {
             const highlightThing = highlight(argThing.text, highlighterOptions);
             console.log("\n=====================");
             console.log("START QUERY LISTENER");
