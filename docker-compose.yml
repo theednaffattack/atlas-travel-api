@@ -1,0 +1,65 @@
+version: "3"
+services:
+  at-redis:
+    image: redis
+    volumes:
+      - ${REDIS_DB_PATH}:/data
+    # ports:
+    #   - "6379:6379"
+  at-db:
+    container_name: ${CONTAINER_DB_NAME}
+    restart: on-failure
+    image: ${ATAPI_POSTGRES_IMAGE}
+    environment:
+      # SSL_CERT_FILE: ${SSL_CERT_FILE}
+      # SSL_KEY_FILE: ${SSL_KEY_FILE}
+      # SSL_CA_FILE: ${SSL_CHAIN_FILE}
+      ALLOW_IP_RANGE: 0.0.0.0/0
+      POSTGRES_PASS: ${POSTGRES_PASS}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_DBNAME: ${POSTGRES_DBNAME}
+      VIRTUAL_PORT: 7000
+      POSTGRES_MULTIPLE_EXTENSIONS: postgis,hstore,postgis_topology,postgis_raster,pgrouting
+
+    volumes:
+      - ${DB_PATH}:/var/lib/postgresql/12/main
+    ports:
+      - "5432:5432"
+
+  at-api:
+    image: ${ATAPI_IMAGE}
+    expose:
+      - 80
+    depends_on:
+      - at-redis
+      - at-db
+    command:
+      ["./wait-for-it.sh", "at-db:5432", "--", "node", "/app/dist/index.js"]
+    environment:
+      VIRTUAL_PORT: ${ATAPI_VIRTUAL_PORT}
+      VIRTUAL_HOST: ${ATAPI_VIRTUAL_HOST}
+      LETSENCRYPT_HOST: ${LETSENCRYPT_HOST}
+      LETSENCRYPT_EMAIL: ${LETSENCRYPT_EMAIL}
+      PORT: ${ATAPI_VIRTUAL_PORT}
+      GRAPHQL_ENDPOINT: ${GRAPHQL_ENDPOINT}
+      SESSION_SECRET: ${SESSION_SECRET}
+      REDIS_HOST: ${REDIS_HOST}
+      REDIS_PORT_NUMBER: ${REDIS_PORT_NUMBER}
+      AT_DB_HOST: ${AT_DB_HOST}
+      AT_DB_PORT: ${AT_DB_PORT}
+      POSTGRES_PASS: ${POSTGRES_PASS}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_DBNAME: ${POSTGRES_DBNAME}
+      TYPEORM_SYNCHRONIZE: "false"
+      TYPEORM_LOGGING: "false"
+      PRODUCTION_CLIENT_ORIGIN: ${PRODUCTION_CLIENT_ORIGIN}
+      PRODUCTION_API_ORIGIN: ${PRODUCTION_API_ORIGIN}
+      BUILD_FLAG: ${BUILD_FLAG}
+      POSTMARK_API_TOKEN: ${POSTMARK_API_TOKEN}
+    ports:
+      - "7000:7000"
+
+networks:
+  default:
+    external:
+      name: ${NETWORK}
