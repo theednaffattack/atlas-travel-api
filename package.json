@@ -9,6 +9,7 @@
     "start": "npm run build && node 'dist/server.js'",
     "build": "rimraf ./dist && tsc",
     "lint": "eslint '*/**/*.{js,ts,tsx}' --quiet --fix",
+    "build:dev": "nodemon 'src/server.ts' --exec 'ts-node -r dotenv/config' src/server.ts -e ts,graphql",
     "test": "jest"
   },
   "lint-staged": {
