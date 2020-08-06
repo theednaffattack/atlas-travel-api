@@ -2,14 +2,13 @@
   "name": "atlas-travel-api",
   "version": "1.0.0",
   "description": "An API for a fake travel website.",
-  "main": "dist/index.js",
+  "main": "dist/server.js",
   "author": "Eddie Naff",
   "license": "MIT",
   "scripts": {
-    "start": "node 'dist/server.js'",
-    "build": "tsc -p . && ncp src/schema dist/schema",
+    "start": "npm run build && node 'dist/server.js'",
+    "build": "rimraf ./dist && tsc",
     "lint": "eslint '*/**/*.{js,ts,tsx}' --quiet --fix",
-    "start:dev": "npm run build:dev",
     "build:dev": "nodemon 'src/server.ts' --exec 'ts-node -r dotenv/config' src/server.ts -e ts,graphql"
   },
   "lint-staged": {
