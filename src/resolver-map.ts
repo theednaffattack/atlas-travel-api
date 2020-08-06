@@ -6,7 +6,6 @@ import { highlight } from "sql-highlight/dist";
 import * as db from "./zapatos/src";
 import * as s from "./zapatos/schema";
 import pool from "./pg-pool";
-import { MyContext } from "./typings";
 import { transaction } from "./zapatos/src";
 import { MyContext } from "./typings";
 import { AuthenticationError } from "apollo-server-express";
