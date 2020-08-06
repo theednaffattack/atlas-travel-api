@@ -16,6 +16,7 @@ import { redisSessionPrefix } from "./constants";
 import schema from "./schema";
 import { MyContext } from "./typings";
 import { ExpressContext } from "apollo-server-express/dist/ApolloServer";
+import { logger } from "./logger";
 
 interface CorsOptionsProps {
   credentials: boolean;
@@ -183,6 +184,24 @@ if (nodeEnvIsProd) {
   });
 }
 app.use(compression());
+
+app.use("/graphql", (req, res, next) => {
+  const startHrTime = process.hrtime();
+
+  res.on("finish", () => {
+    if (req.body && req.body.operationName) {
+      const elapsedHrTime = process.hrtime(startHrTime);
+      const elapsedTimeInMs = elapsedHrTime[0] * 1000 + elapsedHrTime[1] / 1e6;
+      logger.info({
+        type: "timing",
+        name: req.body.operationName,
+        ms: elapsedTimeInMs,
+      });
+    }
+  });
+
+  next();
+});
 
 app.use(sessionMiddleware);
 
