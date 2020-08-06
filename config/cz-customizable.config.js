@@ -10,8 +10,7 @@ module.exports = {
     },
     {
       value: "refactor",
-      name:
-        "refactor: A code change that neither fixes a bug nor adds a feature",
+      name: "refactor: A code change that neither fixes a bug nor adds a feature",
     },
     {
       value: "perf",
@@ -27,12 +26,7 @@ module.exports = {
     { value: "WIP", name: "WIP:      Work in progress" },
   ],
 
-  scopes: [
-    { name: "accounts" },
-    { name: "admin" },
-    { name: "exampleScope" },
-    { name: "changeMe" },
-  ],
+  scopes: [{ name: "accounts" }, { name: "admin" }, { name: "exampleScope" }, { name: "changeMe" }],
 
   allowTicketNumber: false,
   isTicketNumberRequired: false,
@@ -57,11 +51,9 @@ module.exports = {
     // used if allowCustomScopes is true
     customScope: "Denote the SCOPE of this change:",
     subject: "Write a SHORT, IMPERATIVE tense description of the change:\n",
-    body:
-      'Provide a LONGER description of the change (optional). Use "|" to break new line:\n',
+    body: 'Provide a LONGER description of the change (optional). Use "|" to break new line:\n',
     breaking: "List any BREAKING CHANGES (optional):\n",
-    footer:
-      "List any ISSUES CLOSED by this change (optional). E.g.: #31, #34:\n",
+    footer: "List any ISSUES CLOSED by this change (optional). E.g.: #31, #34:\n",
     confirmCommit: "Are you sure you want to proceed with the commit above?",
   },
 

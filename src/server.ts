@@ -1,9 +1,5 @@
 import express, { RequestHandler } from "express";
-import {
-  ApolloServer,
-  ApolloError,
-  AuthenticationError,
-} from "apollo-server-express";
+import { ApolloServer, ApolloError, AuthenticationError } from "apollo-server-express";
 import depthLimit from "graphql-depth-limit";
 import compression from "compression";
 import { GraphQLFormattedError } from "graphql/error/formatError";
@@ -34,10 +30,7 @@ const RedisStore = connectRedis(session);
 
 let sessionMiddleware: RequestHandler;
 
-const getContextFromHttpRequest = async (
-  req: MyContext["req"],
-  res: MyContext["res"]
-) => {
+const getContextFromHttpRequest = async (req: MyContext["req"], res: MyContext["res"]) => {
   if (req && req.session) {
     const { userId } = req.session;
     return { userId, req, res };
@@ -55,7 +48,7 @@ const getContextFromSubscription = (connection: any) => {
 
 let port: number;
 
-let nodeEnvIsProd: boolean = process.env.NODE_ENV === "production";
+const nodeEnvIsProd: boolean = process.env.NODE_ENV === "production";
 
 if (process.env.ATAPI_VIRTUAL_PORT) {
   port = parseInt(process.env.ATAPI_VIRTUAL_PORT, 10);
@@ -121,7 +114,7 @@ const apolloServer = new ApolloServer({
       return new Promise((res) =>
         sessionMiddleware(ws.upgradeReq, {} as any, () => {
           res({ req: ws.upgradeReq });
-        })
+        }),
       );
     },
   },
@@ -143,8 +136,7 @@ const apolloServer = new ApolloServer({
     //   error.message = "Internal Server Error";
 
     return {
-      message:
-        extensions?.exception?.stacktrace[0].replace("Error: ", "") ?? message,
+      message: extensions?.exception?.stacktrace[0].replace("Error: ", "") ?? message,
       path,
       locations,
       // extensions
@@ -223,17 +215,11 @@ ${colors.bgYellow(colors.black("    server started    "))}
 
 
 GraphQL Playground available at:
-    ${colors.green("localhost")}: http://${hostUsed}:${portUsed}${
-      apolloServer.graphqlPath
-    }
-          ${colors.green("LAN")}: http://${homeIp}:${portUsed}${
-      apolloServer.graphqlPath
-    }
+    ${colors.green("localhost")}: http://${hostUsed}:${portUsed}${apolloServer.graphqlPath}
+          ${colors.green("LAN")}: http://${homeIp}:${portUsed}${apolloServer.graphqlPath}
 
 WebSocket subscriptions available at:
-${colors.green("atlas_travel server")}: ws://${homeIp}:${portUsed}${
-      apolloServer.subscriptionsPath
-    }
+${colors.green("atlas_travel server")}: ws://${homeIp}:${portUsed}${apolloServer.subscriptionsPath}
 
 
 `);

@@ -28,13 +28,7 @@ const highlighterOptions = {
   },
 };
 
-function createNameField({
-  firstName,
-  lastName,
-}: {
-  firstName: string;
-  lastName: string;
-}): string {
+function createNameField({ firstName, lastName }: { firstName: string; lastName: string }): string {
   return firstName + " " + lastName;
 }
 
@@ -62,16 +56,12 @@ type MessagesSubType = MessageInterface[] | null;
 
 export const resolvers: IResolvers = {
   Query: {
-    async getMyMessages(
-      _parent,
-      _args,
-      context: MyContext
-    ): Promise<MessagesSubType> {
+    async getMyMessages(_parent, _args, context: MyContext): Promise<MessagesSubType> {
       try {
         const messages = await db.sql<s.message.SQL, s.message.Selectable[]>`
-        SELECT * FROM ${"message"} WHERE ${"userId"} = ${db.param(
-          context.userId
-        )} OR ${"sentBy"} = ${db.param(context.userId)}
+        SELECT * FROM ${"message"} WHERE ${"userId"} = ${db.param(context.userId)} OR ${"sentBy"} = ${db.param(
+          context.userId,
+        )}
         `.run(pool);
 
         console.log("CAN I SEE MESSAGES\n", messages);
@@ -96,9 +86,7 @@ export const resolvers: IResolvers = {
       }
 
       try {
-        const getMyDetails = await db
-          .selectOne("user", { id: context.userId })
-          .run(pool);
+        const getMyDetails = await db.selectOne("user", { id: context.userId }).run(pool);
         // ... do something with this user ...
 
         if (!getMyDetails) {
@@ -115,18 +103,13 @@ export const resolvers: IResolvers = {
 
         return user;
       } catch (err) {
-        if (err instanceof db.NotExactlyOneError)
-          console.log(`${err.name}: ${err.message}`);
+        if (err instanceof db.NotExactlyOneError) console.log(`${err.name}: ${err.message}`);
         else throw err;
       }
     },
   },
   Mutation: {
-    async login(
-      _,
-      { email, password }: LoginArgs,
-      context: MyContext
-    ): Promise<UserType> {
+    async login(_, { email, password }: LoginArgs, context: MyContext): Promise<UserType> {
       const { req } = context;
 
       let user;
