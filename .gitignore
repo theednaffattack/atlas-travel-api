@@ -5,3 +5,8 @@ node_modules
 
 # hide installer / package manager logs
 yarn-error.log
+
+# Secure and hide pem's locally until...
+# I can figure out a path based solution.
+secure
+deploy-server.sh
