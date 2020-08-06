@@ -199,9 +199,9 @@ if (process.env.ATAPI_VIRTUAL_PORT) {
     if (httpServer) {
       const myHost = httpServer.address();
       if (myHost && typeof myHost !== "string") {
-        const { address, port } = myHost;
+        const { address, port: myPort } = myHost;
         hostUsed = address;
-        portUsed = port;
+        portUsed = myPort;
       } else {
         hostUsed = "not_defined";
         portUsed = -1;
