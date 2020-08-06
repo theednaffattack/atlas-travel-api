@@ -10,6 +10,7 @@ import { MyContext } from "./typings";
 import { transaction } from "./zapatos/src";
 import { MyContext } from "./typings";
 import { AuthenticationError } from "apollo-server-express";
+import { highlighterOptions } from "./global-utils/sql-highlight";
 
 interface LoginArgs {
   email: string;
