@@ -11,6 +11,14 @@
     "start:dev": "npm run build:dev",
     "build:dev": "nodemon 'src/server.ts' --exec 'ts-node -r dotenv/config' src/server.ts -e ts,graphql"
   },
+  "config": {
+    "commitizen": {
+      "path": "node_modules/cz-customizable"
+    },
+    "cz-customizable": {
+      "config": "config/cz-customizable.config.js"
+    }
+  },
   "devDependencies": {
     "@types/bcrypt": "^3.0.0",
     "@types/compression": "^1.7.0",
@@ -23,6 +31,7 @@
     "@types/lodash": "^4.14.158",
     "@types/pg": "^7.14.4",
     "bcrypt": "^5.0.0",
+    "cz-customizable": "^6.3.0",
     "nodemon": "^2.0.4",
     "ts-node": "^8.10.2",
     "typescript": "^3.9.7",
