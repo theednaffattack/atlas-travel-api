@@ -26,6 +26,14 @@ services:
     ports:
       - "5432:5432"
 
+  dbmate:
+    image: ${ATAPI_POSTGRES_IMAGE}
+    depends_on:
+      - at-db
+      - at-api
+    environment:
+      POSTGRESQL_URL: ${POSTGRES_URL_DBMATE}
+
   at-api:
     image: ${ATAPI_IMAGE}
     expose:
@@ -33,8 +41,7 @@ services:
     depends_on:
       - at-redis
       - at-db
-    command:
-      ["./wait-for-it.sh", "at-db:5432", "--", "node", "/app/dist/index.js"]
+    command: ["./wait-for-it.sh", "at-db:5432", "--", "node", "/app/dist/index.js"]
     environment:
       VIRTUAL_PORT: ${ATAPI_VIRTUAL_PORT}
       VIRTUAL_HOST: ${ATAPI_VIRTUAL_HOST}
