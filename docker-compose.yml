@@ -26,14 +26,6 @@ services:
     ports:
       - "5432:5432"
 
-  dbmate:
-    image: ${ATAPI_POSTGRES_IMAGE}
-    depends_on:
-      - at-db
-      - at-api
-    environment:
-      POSTGRESQL_URL: ${POSTGRES_URL_DBMATE}
-
   at-api:
     image: ${ATAPI_IMAGE}
     expose:
