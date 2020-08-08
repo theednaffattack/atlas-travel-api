@@ -10,6 +10,7 @@ import internalIp from "internal-ip";
 import colors from "colors/safe";
 import http from "http";
 import * as dotenv from "dotenv";
+import { DbMate } from "dbmate";
 
 import { redis } from "./redis";
 import { redisSessionPrefix } from "./constants";
@@ -50,6 +51,39 @@ const getContextFromSubscription = (connection: any) => {
 let port: number;
 
 const nodeEnvIsProd: boolean = process.env.NODE_ENV === "production";
+
+let retries = 5;
+
+async function runMigrations() {
+  // construct a dbmate instance using a database url string
+  // see https://github.com/amacneil/dbmate#usage for more details
+  const dbmate = new DbMate(process.env.PG_DEV_CONNECTION_STRING as string);
+  // `postgres://${process.env.POSTGRES_USER}:${process.env.POSTGRES_PASS}@localhost:5432/${process.env.POSTGRES_DBNAME}?opt`,
+
+  // invoke up, down, drop as necessary
+  await dbmate.up();
+}
+
+while (retries) {
+  try {
+    runMigrations();
+    break;
+  } catch (error) {
+    console.error("SOME KIND OF ERROR CONNECTING OCCURRED\n", {
+      error,
+      dirname: __dirname,
+      POSTGRES_DBNAME: process.env.POSTGRES_DBNAME,
+      POSTGRES_USER: process.env.POSTGRES_USER,
+      POSTGRES_PASS: process.env.POSTGRES_PASS,
+    });
+
+    retries -= 1;
+    // eslint-disable-next-line no-console
+    console.log(`\n\nRETRIES LEFT: ${retries}\n\n`);
+    // wait 5 seconds
+    setTimeout(() => console.log("TIMEOUT FIRING"), 5000);
+  }
+}
 
 if (process.env.ATAPI_VIRTUAL_PORT) {
   port = parseInt(process.env.ATAPI_VIRTUAL_PORT, 10);
