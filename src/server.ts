@@ -11,6 +11,8 @@ import colors from "colors/safe";
 import http from "http";
 import * as dotenv from "dotenv";
 import { DbMate } from "dbmate";
+import fs from "fs";
+import path from "path";
 
 import { redis } from "./redis";
 import { redisSessionPrefix } from "./constants";
@@ -59,9 +61,23 @@ async function runMigrations() {
   // see https://github.com/amacneil/dbmate#usage for more details
   const dbmate = new DbMate(process.env.PG_DEV_CONNECTION_STRING as string);
   // `postgres://${process.env.POSTGRES_USER}:${process.env.POSTGRES_PASS}@localhost:5432/${process.env.POSTGRES_DBNAME}?opt`,
+  let totalFiles;
+  fs.readdir(`${process.cwd()}/db/migrations`, async function (error, files) {
+    if (error) {
+      throw new Error(`There was an unknown error accessing migration files\n ${error}`);
+    } else {
+      totalFiles = files.length; // return the number of files
+    }
+  });
 
   // invoke up, down, drop as necessary
-  await dbmate.up();
+  if (totalFiles !== undefined && totalFiles > 0) {
+    try {
+      await dbmate.up();
+    } catch (dbmateError) {
+      console.error("MIGRATION ERROR\n", dbmateError);
+    }
+  }
 }
 
 while (retries) {
