@@ -27,6 +27,7 @@ import { MyContext } from "./typings";
 import { ExpressContext } from "apollo-server-express/dist/ApolloServer";
 import { logger } from "./logger";
 import { RecipeResolver } from "./recipe.resolver";
+import { MeResolver } from "./me.resolver";
 
 // configure Redis connection options
 const options: RedisOptions = {
@@ -56,7 +57,7 @@ async function bootstrap() {
 
   // Build the TypeGraphQL schema
   const schema = await buildSchema({
-    resolvers: [RecipeResolver],
+    resolvers: [MeResolver, RecipeResolver],
     validate: false,
     pubSub, // provide redis-based instance of PubSub
   });
