@@ -1,7 +1,7 @@
 import { highlight } from "sql-highlight/dist";
 
-import * as db from "../zapatos/src";
-import { QuerySentInterface } from "../resolver-map";
+import * as db from "./zapatos/src";
+import { QuerySentInterface } from "./old-resolver-map";
 
 export const highlighterOptions = {
   html: false,

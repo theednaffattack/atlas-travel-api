@@ -3,7 +3,7 @@ import casual from "casual";
 import pool from "../src/pg-pool";
 // import * as s from "../src/zapatos/schema";
 import * as db from "../src/zapatos/src";
-import { gqlCall } from "../src/test-utils/gql-call";
+import { gqlCall } from "../src/test-utility.gql-call";
 
 const mockUser = {
   firstName: casual.first_name,

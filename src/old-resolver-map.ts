@@ -9,7 +9,7 @@ import pool from "./pg-pool";
 import { transaction } from "./zapatos/src";
 import { MyContext } from "./typings";
 import { AuthenticationError } from "apollo-server-express";
-import { highlighterOptions } from "./global-utils/sql-highlight";
+import { highlighterOptions } from "./global-utilities";
 
 interface LoginArgs {
   email: string;
