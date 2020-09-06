@@ -2,7 +2,7 @@ import { ObjectType, Field, Float, ID } from "type-graphql";
 
 import { User } from "./user.type";
 import { Hotel } from "./hotel.type";
-import { Venue } from "./venue";
+import { Venue } from "./venue.type";
 
 // prettier-ignore
 @ObjectType()

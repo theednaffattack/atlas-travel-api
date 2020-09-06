@@ -1,6 +1,6 @@
 import { ObjectType, Field, ID } from "type-graphql";
 import { User } from "./user.type";
-import { Venue } from "./venue";
+import { Venue } from "./venue.type";
 
 @ObjectType()
 export class EventEntity {
