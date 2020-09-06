@@ -1,7 +1,7 @@
 import { graphql } from "graphql";
 import { Maybe } from "graphql/jsutils/Maybe";
 
-import schema from "../schema";
+import { schema } from "./test-utility.build-schema";
 
 // prettier-ignore
 interface Options {
