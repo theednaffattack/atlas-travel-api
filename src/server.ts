@@ -29,6 +29,7 @@ import { logger } from "./logger";
 import { RecipeResolver } from "./recipe.resolver";
 import { MeResolver } from "./me.resolver";
 import { LoginResolver } from "./login.resolver";
+import { ChangePasswordFromContextUseridResolver } from "./user.change-password-from-context";
 
 // configure Redis connection options
 const options: RedisOptions = {
@@ -58,7 +59,7 @@ async function bootstrap() {
 
   // Build the TypeGraphQL schema
   const schema = await buildSchema({
-    resolvers: [MeResolver, LoginResolver, RecipeResolver],
+    resolvers: [ChangePasswordFromContextUseridResolver, MeResolver, LoginResolver, RecipeResolver],
     validate: false,
     pubSub, // provide redis-based instance of PubSub
   });
