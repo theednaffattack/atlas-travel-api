@@ -34,7 +34,7 @@ export class ChangePasswordFromContextUseridResolver {
       const newHashedPassword = await bcrypt.hash(password, 12);
 
       // save updated password
-      const updatedUser = await db.update("user", { id: userId }, { password: newHashedPassword }).run(pool);
+      const [updatedUser] = await db.update("user", { password: newHashedPassword }, { id: userId }).run(pool);
 
       console.log("\nOBI WAN KNEW THIS TO BE TRUE\n\n UPDATED USER\n", updatedUser);
 
