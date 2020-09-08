@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import { inspect } from "util";
 
 import pool from "../src/pg-pool";
+import testPool from "../src/pg-pool-test";
 import * as db from "./zapatos/src";
 import { User } from "./user.type";
 import { MyContext } from "./typings";
@@ -23,7 +24,11 @@ export class ChangePasswordFromContextUseridResolver {
     }
     let user;
     try {
-      user = await db.selectOne("user", { id: userId }).run(pool);
+      if (process.env.NODE_ENV === "test") {
+        user = await db.selectOne("user", { id: userId }).run(testPool);
+      } else {
+        user = await db.selectOne("user", { id: userId }).run(pool);
+      }
 
       // can't find a user in the db
       if (!user) {
