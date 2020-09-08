@@ -3,7 +3,7 @@ import { Resolver, Query, Ctx } from "type-graphql";
 import * as db from "./zapatos/src";
 import * as s from "./zapatos/schema";
 
-import pool from "./pg-pool";
+import pool from "./pg-pool-test";
 
 import { User } from "./user.type";
 import { MyContext } from "./typings";
@@ -15,47 +15,17 @@ export class MeResolver {
   async me(@Ctx() context: MyContext): Promise<User | undefined> {
     // if we can't find a userId on the current session => undefined
 
-    if (!context.req.session!.userId) {
+    if (!context.req.session || !context.req.session.userId) {
       return undefined;
     }
 
-    const findMe = await db.transaction(pool, db.Isolation.Serializable, async (txnClient) => {
-      try {
-        return await db.selectExactlyOne("user", { id: context.userId }).run(txnClient);
-      } catch (err) {
-        if (err instanceof db.NotExactlyOneError) console.log(`${err.name}: ${err.message}`);
-        // else throw err;
-        else throw new AuthenticationError("Not authenticated!");
-      }
+    const user = await db.selectOne("user", { id: context.req.session?.userId }).run(pool);
 
-      // try {
-      //   if (process.env.NODE_ENV === "test") {
-      //     getMyDetails = await db.selectOne("user", { id: context.req.session?.userId }).run(txnClient);
-      //   } else {
-      //     getMyDetails = await db.selectOne("user", { id: context.userId }).run(txnClient);
-      //   }
-      //   if (!getMyDetails) {
-      //     throw new AuthenticationError("Not authenticated!");
-      //   }
-
-      //   const user = {
-      //     name: `${getMyDetails.firstName} ${getMyDetails.lastName}`,
-      //     ...getMyDetails,
-      //     profileImageUri: getMyDetails.profileImageUri ? getMyDetails.profileImageUri : "",
-      //   };
-
-      //   return user;
-      // } catch (err) {
-      //   if (err instanceof db.NotExactlyOneError) console.log(`${err.name}: ${err.message}`);
-      //   else throw err;
-      // }
-    });
-
-    if (findMe && findMe.id) {
+    if (user && user.id) {
       return {
-        ...findMe,
-        name: findMe.firstName + " " + findMe.lastName,
-        profileImageUri: findMe.profileImageUri ? findMe.profileImageUri : "",
+        ...user,
+        name: user.firstName + " " + user.lastName,
+        profileImageUri: user.profileImageUri ? user.profileImageUri : "",
       };
     } else {
       throw new AuthenticationError("Not authenticated");
