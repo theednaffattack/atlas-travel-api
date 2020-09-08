@@ -1,34 +1,28 @@
-import { graphql } from "graphql";
+import { graphql, GraphQLSchema } from "graphql";
 import { Maybe } from "graphql/jsutils/Maybe";
+import "reflect-metadata";
 
-import { schema } from "./test-utility.build-schema";
+import { createSchema } from "./utility.create-schema";
 
 // prettier-ignore
 interface Options {
   source: string;
   variableValues?: Maybe<{
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     [key: string]: any;
   }>;
   userId?: string;
 }
 
-// let schema: GraphQLSchema;
+let schema: GraphQLSchema;
 
-export const gqlCall = async ({
-  source,
-  variableValues,
-  userId,
-}: // eslint-disable-next-line @typescript-eslint/no-explicit-any
-Options): Promise<any> => {
-  // if (!schema) {
-  //   schema = await createSchema();
-  // }
+export const gqlCall = async ({ source, variableValues, userId }: Options): Promise<any> => {
+  if (!schema) {
+    schema = await createSchema();
+  }
 
-  return graphql({
+  return await graphql({
     schema,
     source,
-
     variableValues,
     contextValue: {
       req: {
@@ -37,7 +31,6 @@ Options): Promise<any> => {
         },
       },
       res: {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         clearCookie: (): jest.Mock<any, any> => jest.fn(),
       },
     },
