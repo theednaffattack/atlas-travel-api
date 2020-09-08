@@ -6,7 +6,7 @@ import * as db from "./zapatos/src";
 import pool from "../src/pg-pool";
 import { redis } from "./redis";
 import { User } from "./user.type";
-import { forgotPasswordPrefix } from "./constants";
+import { forgotPasswordPrefix, redisSessionPrefix } from "./constants";
 import { MyContext } from "./typings";
 import { isAuth } from "./middleware.is-auth";
 import { logger } from "./middleware.logger";
@@ -21,10 +21,9 @@ export class ChangePasswordFromTokenResolver {
     @Arg("data") { token, password }: ChangePasswordInput,
     @Ctx() ctx: MyContext,
   ): Promise<User | null> {
-    console.log("VIEW TOKEN", token);
-    // console.log("VIEW USERID", userId);
-
     const userId = await redis.get(forgotPasswordPrefix + token);
+    
+
     // token expired in redis, possibly bad token
     if (!userId) {
       return null;
