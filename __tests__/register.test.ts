@@ -1,6 +1,6 @@
 import casual from "casual";
 
-import pool from "../src/pg-pool-test";
+import testPool from "../src/pg-pool-test";
 import * as db from "../src/zapatos/src";
 import { gqlCall } from "../src/test-utility.gql-call";
 
@@ -26,16 +26,24 @@ const variableValues = {
 
 describe("Register", () => {
   it("create user", async (done) => {
-    const { data } = await gqlCall({ source: registerMutation, variableValues });
-
-    expect(data).toMatchObject({
-      register: {
-        id: data.register.id,
-        firstName: variableValues.data.firstName,
-        lastName: variableValues.data.lastName,
-        email: variableValues.data.email,
+    const response = await gqlCall({ source: registerMutation, variableValues });
+    const { data: user } = variableValues;
+    expect(response).toMatchObject({
+      data: {
+        register: {
+          id: response.data.register.id,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          email: user.email,
+        },
       },
     });
+
+    const dbUser = await db.selectOne("user", { email: user.email }).run(testPool);
+
+    expect(dbUser).toBeDefined();
+    expect(dbUser!.confirmed).toBeFalsy();
+    expect(dbUser!.firstName).toBe(user.firstName);
 
     done();
   }, 9000);
