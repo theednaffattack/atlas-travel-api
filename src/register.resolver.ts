@@ -19,8 +19,6 @@ export class RegisterResolver {
     const hashedPassword = await bcrypt.hash(password, 12);
     let user;
     if (process.env.NODE_ENV === "test") {
-      console.log("TEST IS RUNNING: ");
-
       user = await db
         .insert("user", {
           email,
