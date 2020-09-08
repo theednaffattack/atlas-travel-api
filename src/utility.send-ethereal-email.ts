@@ -29,7 +29,7 @@ export async function sendEtherealEmail(email: string, url: string): Promise<voi
   // send mail with defined transport object
   const info = await transporter.sendMail(mailOptions);
 
-  if (process.env.NODE_ENV === "development" && process.env.ENVIRONMENT_BEHAVIOR === "local") {
+  if (process.env.NODE_ENV !== "production") {
     console.log("Message sent: %s", info.messageId);
     // Preview only available when sending through an Ethereal account
     console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
