@@ -33,6 +33,7 @@ export const gqlCall = async ({ source, variableValues, userId }: Options): Prom
       res: {
         clearCookie: (): jest.Mock<any, any> => jest.fn(),
       },
+      userId,
     },
   });
 };
