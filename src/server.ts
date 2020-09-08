@@ -3,13 +3,7 @@ import { ApolloServer, ApolloError, AuthenticationError } from "apollo-server-ex
 import depthLimit from "graphql-depth-limit";
 import compression from "compression";
 import { GraphQLFormattedError } from "graphql/error/formatError";
-import { buildSchema } from "type-graphql";
 import "reflect-metadata";
-
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const Redis = require("ioredis");
-
-import { RedisPubSub } from "graphql-redis-subscriptions";
 import { GraphQLError } from "graphql";
 import session from "express-session";
 import connectRedis from "connect-redis";
@@ -19,29 +13,14 @@ import http from "http";
 import * as dotenv from "dotenv";
 import { DbMate } from "dbmate";
 import fs from "fs";
-import { RedisOptions } from "ioredis";
+import { ExpressContext } from "apollo-server-express/dist/ApolloServer";
 
-import { redis, redisHostAndPortOpts } from "./redis";
+import { redis } from "./redis";
 import { redisSessionPrefix } from "./constants";
 import { MyContext } from "./typings";
-import { ExpressContext } from "apollo-server-express/dist/ApolloServer";
 import { logger } from "./logger";
-import { RecipeResolver } from "./recipe.resolver";
-import { MeResolver } from "./me.resolver";
-import { LoginResolver } from "./login.resolver";
-import { ChangePasswordFromContextUseridResolver } from "./user.change-password-from-context";
 
-// configure Redis connection options
-const options: RedisOptions = {
-  ...redisHostAndPortOpts,
-  retryStrategy: (times) => Math.max(times * 100, 3000),
-};
-
-// create Redis-based pub-sub
-const pubSub = new RedisPubSub({
-  publisher: new Redis(options),
-  subscriber: new Redis(options),
-});
+import { createSchema } from "./utility.create-schema";
 
 interface CorsOptionsProps {
   credentials: boolean;
@@ -56,13 +35,6 @@ async function bootstrap() {
   const RedisStore = connectRedis(session);
 
   let sessionMiddleware: RequestHandler;
-
-  // Build the TypeGraphQL schema
-  const schema = await buildSchema({
-    resolvers: [ChangePasswordFromContextUseridResolver, MeResolver, LoginResolver, RecipeResolver],
-    validate: false,
-    pubSub, // provide redis-based instance of PubSub
-  });
 
   const getContextFromHttpRequest = async (req: MyContext["req"], res: MyContext["res"]) => {
     if (req && req.session) {
@@ -89,8 +61,15 @@ async function bootstrap() {
   async function runMigrations() {
     // construct a dbmate instance using a database url string
     // see https://github.com/amacneil/dbmate#usage for more details
-    const dbmate = new DbMate(process.env.PG_DEV_CONNECTION_STRING as string);
-    // `postgres://${process.env.POSTGRES_USER}:${process.env.POSTGRES_PASS}@localhost:5432/${process.env.POSTGRES_DBNAME}?opt`,
+    let dbmate;
+    if (process.env.NODE_ENV === "test") {
+      dbmate = new DbMate(process.env.PG_TEST_CONNECTION_STRING as string);
+    } else if (process.env.NODE_ENV === "production") {
+      dbmate = new DbMate(process.env.PG_PROD_CONNECTION_STRING as string);
+    } else {
+      dbmate = new DbMate(process.env.PG_DEV_CONNECTION_STRING as string);
+    }
+
     let totalFiles;
     fs.readdir(`${process.cwd()}/db/migrations`, async function (error, files) {
       if (error) {
@@ -179,7 +158,7 @@ async function bootstrap() {
   };
 
   const apolloServer = new ApolloServer({
-    schema,
+    schema: await createSchema(),
     playground: { version: "1.7.25", endpoint: "/graphql" },
     introspection: true,
     context: ({ req, res, connection }: ExpressContext) => {
@@ -191,7 +170,7 @@ async function bootstrap() {
     },
     subscriptions: {
       path: "/subscriptions",
-      onConnect: (_, ws: any) => {
+      onConnect: (_: any, ws: any) => {
         return new Promise((res) =>
           sessionMiddleware(ws.upgradeReq, {} as any, () => {
             res({ req: ws.upgradeReq });

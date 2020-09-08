@@ -6,11 +6,14 @@
   "author": "Eddie Naff",
   "license": "MIT",
   "scripts": {
-    "start": "npm run build && node 'dist/server.js'",
+    "start": "yarn build && node 'dist/server.js'",
     "build": "rimraf ./dist && tsc",
     "lint": "eslint '*/**/*.{js,ts,tsx}' --quiet --fix",
     "build:dev": "nodemon 'src/server.ts' --exec 'ts-node -r dotenv/config' src/server.ts -e ts,graphql",
-    "test": "jest"
+    "validate": " yarn lint && yarn test && yarn build",
+    "drop-test-db": "ts-node -r dotenv/config src/utility.drop-test-database.ts",
+    "seed-db": "ts-node -r dotenv/config src/utility.prepare-database",
+    "test": "yarn seed-db && jest"
   },
   "lint-staged": {
     "src/**/*.{ts}": [

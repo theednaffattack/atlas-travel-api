@@ -1,7 +1,6 @@
 import casual from "casual";
 
-import pool from "../src/pg-pool";
-// import * as s from "../src/zapatos/schema";
+import pool from "../src/pg-pool-test";
 import * as db from "../src/zapatos/src";
 import { gqlCall } from "../src/test-utility.gql-call";
 
@@ -34,17 +33,11 @@ describe("Me", () => {
         confirmed: true,
       })
       .run(pool);
-    let response;
 
-    // did we insert a user?
-    if (user && user.id) {
-      // call resolver
-      response = await gqlCall({
-        source: meQuery,
-        variableValues: { getUserInfo: "fired from get user info" },
-        userId: user.id,
-      });
-    }
+    const response = await gqlCall({
+      source: meQuery,
+      userId: user.id,
+    });
 
     expect(response).toMatchObject({
       data: {
@@ -66,7 +59,7 @@ describe("Me", () => {
       variableValues: { checkNull: "fired from check if user is null (it should be)" },
     });
 
-    // basically a test for an authenticated (logged in)
+    // basically a test for an un-authenticated (not logged in)
     // user
     expect(response).toMatchObject({
       data: {

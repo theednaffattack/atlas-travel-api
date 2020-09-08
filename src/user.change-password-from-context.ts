@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import { inspect } from "util";
 
 import pool from "../src/pg-pool";
+import testPool from "../src/pg-pool-test";
 import * as db from "./zapatos/src";
 import { User } from "./user.type";
 import { MyContext } from "./typings";
@@ -23,7 +24,11 @@ export class ChangePasswordFromContextUseridResolver {
     }
     let user;
     try {
-      user = await db.selectOne("user", { id: userId }).run(pool);
+      if (process.env.NODE_ENV === "test") {
+        user = await db.selectOne("user", { id: userId }).run(testPool);
+      } else {
+        user = await db.selectOne("user", { id: userId }).run(pool);
+      }
 
       // can't find a user in the db
       if (!user) {
@@ -34,7 +39,7 @@ export class ChangePasswordFromContextUseridResolver {
       const newHashedPassword = await bcrypt.hash(password, 12);
 
       // save updated password
-      const updatedUser = await db.update("user", { id: userId }, { password: newHashedPassword }).run(pool);
+      const [updatedUser] = await db.update("user", { password: newHashedPassword }, { id: userId }).run(pool);
 
       console.log("\nOBI WAN KNEW THIS TO BE TRUE\n\n UPDATED USER\n", updatedUser);
 
