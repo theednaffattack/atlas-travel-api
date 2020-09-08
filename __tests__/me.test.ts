@@ -59,7 +59,7 @@ describe("Me", () => {
       variableValues: { checkNull: "fired from check if user is null (it should be)" },
     });
 
-    // basically a test for an authenticated (logged in)
+    // basically a test for an un-authenticated (not logged in)
     // user
     expect(response).toMatchObject({
       data: {
