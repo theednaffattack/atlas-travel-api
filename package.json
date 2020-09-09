@@ -17,6 +17,7 @@
     "prep-db": "ts-node -r dotenv/config src/utility.prepare-database",
     "seed-hotels": "ts-node -r dotenv/config src/utility.migration.data.seed-hotels.ts",
     "seed-users": "ts-node -r dotenv/config src/utility.migration.data.seed-users.ts",
+    "seed-hotel-photos": "ts-node -r dotenv/config src/utility.migration.data.seed-hotel-photos.ts",
     "seed-standard": "yarn drop-dev-db && yarn prep-db && yarn seed-hotels && yarn seed-users",
     "test": "yarn drop-test-db && yarn prep-db && jest"
   },
@@ -120,6 +121,7 @@
     "ioredis": "^4.17.3",
     "lodash": "^4.17.19",
     "ncp": "^2.0.0",
+    "node-fetch": "^2.6.1",
     "nodemailer": "^6.4.11",
     "pg": "^8.3.0",
     "pino": "^6.5.0",
