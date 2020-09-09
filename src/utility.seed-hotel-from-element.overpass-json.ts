@@ -11,6 +11,7 @@ import { hotel } from "./zapatos/schema";
 
 import hotelData from "./utility.db-seed.overpass-hotels-sf.json";
 import { Pool } from "pg";
+import { randomNumber } from "./utility.random-number";
 
 type Hotel = hotel.Insertable;
 
@@ -22,10 +23,6 @@ interface ElementInterface {
   tags: {
     [key: string]: string;
   };
-}
-
-export function randomNumber(min: number, max: number): number {
-  return Math.random() * (max - min) + min;
 }
 
 const sampleAmenities = ["wifi", "parking", "restaurant", "swimming", "bar"];
