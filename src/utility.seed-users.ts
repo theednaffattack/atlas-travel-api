@@ -13,10 +13,6 @@ import { Pool } from "pg";
 
 type User = user.Insertable;
 
-export function randomNumber(min: number, max: number): number {
-  return Math.random() * (max - min) + min;
-}
-
 export async function createUsersFromFaker(num: number): Promise<User[]> {
   if (process.env.NODE_ENV === undefined) {
     throw new Error(
