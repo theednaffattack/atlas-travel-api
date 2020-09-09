@@ -13,6 +13,6 @@ export class Recipe {
   @Field({ nullable: true })
   description?: string;
 
-  @Field((type) => [Comment])
+  @Field(() => [Comment])
   comments!: Comment[];
 }

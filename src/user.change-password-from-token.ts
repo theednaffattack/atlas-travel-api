@@ -6,7 +6,7 @@ import * as db from "./zapatos/src";
 import pool from "../src/pg-pool";
 import { redis } from "./redis";
 import { User } from "./user.type";
-import { forgotPasswordPrefix, redisSessionPrefix } from "./constants";
+import { forgotPasswordPrefix } from "./constants";
 import { MyContext } from "./typings";
 import { isAuth } from "./middleware.is-auth";
 import { logger } from "./middleware.logger";

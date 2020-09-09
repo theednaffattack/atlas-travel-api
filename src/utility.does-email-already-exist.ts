@@ -5,8 +5,6 @@ import {
   ValidatorConstraintInterface,
 } from "class-validator";
 
-import { User } from "./user.type";
-
 @ValidatorConstraint({ async: true })
 export class DoesEmailAlreadyExistConstraint implements ValidatorConstraintInterface {
   validate(email: string): Promise<boolean> {

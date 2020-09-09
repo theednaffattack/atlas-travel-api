@@ -60,6 +60,7 @@ export class RecipeResolver {
       return payload.recipeId === args.recipeId;
     },
   })
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   newComments(@Root() newComment: NewCommentPayload, @Args() { recipeId }: NewCommentsArgs): Comment {
     return {
       content: newComment.content,
