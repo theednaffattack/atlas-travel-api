@@ -10,3 +10,4 @@ yarn-error.log
 # I can figure out a path based solution.
 secure
 deploy-server.sh
+src/utility.db-seed.overpass-hotels-sf.json
