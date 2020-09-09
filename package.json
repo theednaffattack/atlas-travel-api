@@ -15,7 +15,9 @@
     "drop-test-db": "ts-node -r dotenv/config src/utility.drop-test-database.ts",
     "drop-dev-db": "ts-node -r dotenv/config src/utility.drop-dev-database.ts",
     "prep-db": "ts-node -r dotenv/config src/utility.prepare-database",
-    "seed-hotels": "yarn drop-dev-db && yarn prep-db && ts-node -r dotenv/config src/utility.migration.data.seed-hotels.ts",
+    "seed-hotels": "ts-node -r dotenv/config src/utility.migration.data.seed-hotels.ts",
+    "seed-users": "ts-node -r dotenv/config src/utility.migration.data.seed-users.ts",
+    "seed-standard": "yarn drop-dev-db && yarn prep-db && yarn seed-hotels && yarn seed-users",
     "test": "yarn drop-test-db && yarn prep-db && jest"
   },
   "lint-staged": {
