@@ -1,7 +1,6 @@
 import { Resolver, Query, Ctx } from "type-graphql";
 
 import * as db from "./zapatos/src";
-import * as s from "./zapatos/schema";
 
 import pool from "./pg-pool-test";
 

@@ -1,7 +1,6 @@
 // utility.seed-hotel-from-element.overpass-json.ts
 
-import bcrypt from "bcrypt";
-import { email, first_name, last_name, words, sentences } from "casual";
+import { words, sentences } from "casual";
 import fetch from "node-fetch";
 
 import prodPool from "./pg-pool";

@@ -1,6 +1,5 @@
 import { InputType, Field } from "type-graphql";
 
-import { User } from "./user.type";
 import { PasswordInput } from "./password.input";
 import { IsEmail } from "class-validator";
 import { DoesEmailAlreadyExist } from "./utility.does-email-already-exist";

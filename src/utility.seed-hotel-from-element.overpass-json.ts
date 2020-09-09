@@ -6,7 +6,6 @@ import prodPool from "./pg-pool";
 import testPool from "./pg-pool-test";
 import devPool from "./pg-pool-dev";
 import * as db from "./zapatos/src";
-import * as s from "./zapatos/schema";
 import { hotel } from "./zapatos/schema";
 
 import hotelData from "./utility.db-seed.overpass-hotels-sf.json";

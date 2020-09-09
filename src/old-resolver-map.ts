@@ -6,7 +6,6 @@ import { highlight } from "sql-highlight/dist";
 import * as db from "./zapatos/src";
 import * as s from "./zapatos/schema";
 import pool from "./pg-pool";
-import { transaction } from "./zapatos/src";
 import { MyContext } from "./typings";
 import { AuthenticationError } from "apollo-server-express";
 import { highlighterOptions } from "./global-utilities";
@@ -69,7 +68,7 @@ export const resolvers: IResolvers = {
         throw error;
       }
     },
-    helloWorld(_: void, args: void): string {
+    helloWorld(): string {
       return `👋🏾 Hello world! 👋🏾`;
     },
     async me(_parent, _args, context: MyContext): Promise<UserType> {
