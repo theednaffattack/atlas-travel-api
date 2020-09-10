@@ -3,7 +3,7 @@ import { GraphQLSchema } from "graphql";
 import "reflect-metadata";
 
 import { MeResolver } from "./me.resolver";
-import { LoginResolver } from "./login.resolver";
+import { LoginResolver } from "./user.login.resolver";
 import { RegisterResolver } from "./register.resolver";
 import { ChangePasswordFromTokenResolver } from "./user.change-password-from-token";
 import { ChangePasswordFromContextUseridResolver } from "./user.change-password-from-context";
