@@ -114,7 +114,7 @@ export const resolvers: IResolvers = {
       try {
         // START - logging
 
-        await db.setConfig({
+        db.setConfig({
           queryListener: (argThing: QuerySentInterface) => {
             const highlightThing = highlight(argThing.text, highlighterOptions);
             console.log("\n=====================");
