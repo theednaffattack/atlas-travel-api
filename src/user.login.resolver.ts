@@ -1,6 +1,5 @@
 import { Resolver, Ctx, Arg, Mutation } from "type-graphql";
 import bcrypt from "bcrypt";
-import { inspect } from "util";
 // import { AuthenticationError } from "apollo-server-express";
 
 import * as db from "./zapatos/src";
@@ -9,18 +8,18 @@ import pool from "./pg-pool";
 import { User } from "./user.type";
 import { MyContext } from "./typings";
 import { LoginInput } from "./login.input";
+import { errorSavingInfoToDatabase } from "./utility.errors";
 
 @Resolver()
 export class LoginResolver {
   @Mutation(() => User, { nullable: true })
   async login(@Arg("data") { email, password }: LoginInput, @Ctx() context: MyContext): Promise<User | null> {
-    // let user: User | undefined;
     let user;
 
     try {
       user = await db.selectOne("user", { email }).run(pool);
     } catch (error) {
-      console.log("User lookup ERRROR\n", inspect(error));
+      errorSavingInfoToDatabase("login", error);
     }
 
     if (!user) {
