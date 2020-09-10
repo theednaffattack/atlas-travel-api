@@ -11,14 +11,13 @@ import { RecipeResolver } from "./recipe.resolver";
 import Redis, { RedisOptions } from "ioredis";
 import { redisHostAndPortOpts } from "./redis";
 import { RedisPubSub } from "graphql-redis-subscriptions";
+import { AdminEditUserInfoResolver } from "./user.admin.edit-another-user_s-user-info";
 
-// configure Redis connection options
 const options: RedisOptions = {
   ...redisHostAndPortOpts,
   retryStrategy: (times) => Math.max(times * 100, 3000),
 };
 
-// create Redis-based pub-sub
 const pubSub = new RedisPubSub({
   publisher: new Redis(options),
   subscriber: new Redis(options),
@@ -27,6 +26,7 @@ const pubSub = new RedisPubSub({
 export const createSchema = (): Promise<GraphQLSchema> =>
   buildSchema({
     resolvers: [
+      AdminEditUserInfoResolver,
       ChangePasswordFromTokenResolver,
       ChangePasswordFromContextUseridResolver,
       MeResolver,
@@ -37,6 +37,5 @@ export const createSchema = (): Promise<GraphQLSchema> =>
     authChecker: ({ context: { req } }) => {
       return !!req.session.userId;
     },
-
-    pubSub, // provide redis-based instance of PubSub
+    pubSub,
   });
