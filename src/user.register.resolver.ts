@@ -4,7 +4,7 @@ import { Pool } from "pg";
 
 import * as db from "./zapatos/src";
 import { User } from "./user.type";
-import { RegisterInput } from "./register.input";
+import { RegisterInput } from "./user.register.input";
 import { logger } from "./middleware.logger";
 import { sendPostmarkEmail } from "./utility.send-postmark-email";
 import { createConfirmationUrl } from "./utility.create-confirmation-url";
