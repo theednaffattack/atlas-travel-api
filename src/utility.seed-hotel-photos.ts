@@ -3,14 +3,12 @@
 import { words, sentences } from "casual";
 import fetch from "node-fetch";
 
-import prodPool from "./pg-pool";
-import testPool from "./pg-pool-test";
-import devPool from "./pg-pool-dev";
 import * as db from "./zapatos/src";
 import { photo } from "./zapatos/schema";
 
 import { Pool } from "pg";
 import { randomNumber } from "./utility.random-number";
+import { getConnectionPool } from "./utility.get-connection-pool";
 
 type Photo = photo.Selectable;
 
@@ -35,31 +33,19 @@ export async function generateHotelPhotos({
 }: {
   numMax: number;
   numMin: number;
-}): Promise<Photo[]> {
+}): Promise<void> {
   let allHotels;
-  let pool: Pool;
-
-  if (process.env.NODE_ENV === "test") {
-    pool = testPool;
-  }
-  if (process.env.NODE_ENV === "production") {
-    pool = prodPool;
-  } else {
-    pool = devPool;
-  }
+  const pool: Pool = getConnectionPool(process.env.NODE_ENV);
 
   try {
     allHotels = await db.select("hotel", db.all).run(pool);
   } catch (error) {
-    throw Error(`Error ${error}`);
+    throw Error(`Error selecting hotels.\n${error}`);
   }
-
-  const cachedPhotos: any[] = [];
 
   try {
     for (const singleHotel of allHotels) {
       const numberOfPhotos = Math.floor(randomNumber(numMin, numMax));
-      console.log("VIEEW NUMBER OF PHOTOS", numberOfPhotos);
 
       // NOTE: why can't this be one insert into Photos after
       // prepping the images?
@@ -83,26 +69,13 @@ export async function generateHotelPhotos({
               console.error(err);
             });
 
-          if (insertedPhotos) {
-            cachedPhotos.push(insertedPhotos);
-          }
           return insertedPhotos;
         }),
       );
     }
   } catch (error) {
-    throw new Error(`Promise all error, ${error}`);
+    throw new Error(`Error inserting hotel photos.\n ${error}`);
   }
-
-  console.log("can we see cached photos?");
-
-  try {
-    db.insert("photo", cachedPhotos).run(pool);
-  } catch (error) {
-    console.log(`Error while saving photos!!!`);
-  }
-
-  return cachedPhotos;
 }
 
 // RAN PROGRAM AT 3:24 p.m., Wed, Sep 9, 2020

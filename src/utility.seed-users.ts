@@ -3,32 +3,16 @@
 import bcrypt from "bcrypt";
 import { email, first_name, last_name } from "casual";
 
-import prodPool from "./pg-pool";
-import testPool from "./pg-pool-test";
-import devPool from "./pg-pool-dev";
 import * as db from "./zapatos/src";
 import { user } from "./zapatos/schema";
 
 import { Pool } from "pg";
+import { getConnectionPool } from "./utility.get-connection-pool";
 
 type User = user.Insertable;
 
 export async function createUsersFromFaker(num: number): Promise<User[]> {
-  if (process.env.NODE_ENV === undefined) {
-    throw new Error(
-      "The NODE_ENV var is undefined. Please set it to 'development', 'production' or 'test' and try again.",
-    );
-  }
-
-  let poolConnection: Pool;
-  if (process.env.NODE_ENV === "test") {
-    poolConnection = testPool;
-  }
-  if (process.env.NODE_ENV === "production") {
-    poolConnection = prodPool;
-  } else {
-    poolConnection = devPool;
-  }
+  const pool: Pool = getConnectionPool(process.env.NODE_ENV);
 
   const fakeUsers = [];
 
@@ -42,5 +26,5 @@ export async function createUsersFromFaker(num: number): Promise<User[]> {
     };
   }
 
-  return await db.insert("user", fakeUsers).run(poolConnection);
+  return await db.insert("user", fakeUsers).run(pool);
 }
