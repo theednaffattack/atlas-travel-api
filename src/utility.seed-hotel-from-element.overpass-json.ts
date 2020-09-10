@@ -2,15 +2,12 @@
 
 import { first_name, integer } from "casual";
 
-import prodPool from "./pg-pool";
-import testPool from "./pg-pool-test";
-import devPool from "./pg-pool-dev";
 import * as db from "./zapatos/src";
 import { hotel } from "./zapatos/schema";
 
 import hotelData from "./utility.db-seed.overpass-hotels-sf.json";
-import { Pool } from "pg";
 import { randomNumber } from "./utility.random-number";
+import { getConnectionPool } from "./utility.get-connection-pool";
 
 type Hotel = hotel.Insertable;
 
@@ -59,33 +56,21 @@ function buildFeatures(hotelElements: any[]): Hotel[] {
   return newFeatures;
 }
 
-export async function bulkInsertHotels(limit?: number): Promise<hotel.Selectable[]> {
-  if (process.env.NODE_ENV === undefined) {
-    throw new Error(
-      "The NODE_ENV var is undefined. Please set it to 'development', 'production' or 'test' and try again.",
-    );
-  }
-
-  let poolConnection: Pool;
-  if (process.env.NODE_ENV === "test") {
-    poolConnection = testPool;
-  }
-  if (process.env.NODE_ENV === "production") {
-    poolConnection = prodPool;
-  } else {
-    poolConnection = devPool;
-  }
+export async function bulkInsertHotels(limit?: number): Promise<hotel.Selectable[] | undefined> {
+  const poolConnection = getConnectionPool(process.env.NODE_ENV);
 
   const hotelsLength = hotelData.elements.length - 1;
   const numberToSlice = limit ? limit : hotelsLength;
   const hotelSlice = hotelData.elements.slice(0, numberToSlice);
 
   const builtFeatures = buildFeatures(hotelSlice);
-  if (poolConnection) {
-    return await db.insert("hotel", builtFeatures).run(poolConnection);
-  } else {
-    throw new Error(
-      "Error setting the database connection. Please check your env vars and try again. NODE_ENV must be 'test', 'development', or 'production'.",
-    );
+
+  let insertedHotel;
+
+  try {
+    insertedHotel = await db.insert("hotel", builtFeatures).run(poolConnection);
+  } catch (error) {
+    console.log("Error setting the database connection.\n", error);
   }
+  return insertedHotel;
 }

@@ -19,7 +19,7 @@ const variableValues = {
   data: {
     firstName: casual.first_name,
     lastName: casual.last_name,
-    email: "fred" + casual.email,
+    email: casual.email,
     password: casual.password,
   },
 };

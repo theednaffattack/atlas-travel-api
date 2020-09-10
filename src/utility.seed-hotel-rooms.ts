@@ -3,28 +3,18 @@
 import { integer } from "casual";
 import { Pool } from "pg";
 
-import prodPool from "./pg-pool";
-import testPool from "./pg-pool-test";
-import devPool from "./pg-pool-dev";
 import * as db from "./zapatos/src";
 import { room } from "./zapatos/schema";
 import { randomNumber } from "./utility.random-number";
+import { getConnectionPool } from "./utility.get-connection-pool";
 
 type Room = room.Insertable;
 
-let pool: Pool;
+const pool: Pool = getConnectionPool(process.env.NODE_ENV);
+
 const roomTypes = ["suite", "standard", "penthouse"];
 
 export async function seedRooms(): Promise<void> {
-  if (process.env.NODE_ENV === "test") {
-    pool = testPool;
-  }
-  if (process.env.NODE_ENV === "production") {
-    pool = prodPool;
-  } else {
-    pool = devPool;
-  }
-
   try {
     const hotels = await db.select("hotel", db.all).run(pool);
 
