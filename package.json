@@ -20,7 +20,7 @@
     "seed-hotel-photos": "ts-node -r dotenv/config src/utility.migration.data.seed-hotel-photos.ts",
     "seed-hotel-rooms": "ts-node -r dotenv/config src/utility.migration.data.seed-hotel-rooms.ts",
     "seed-standard": "yarn drop-dev-db && yarn prep-db && yarn seed-hotels && yarn seed-users && yarn seed-hotel-rooms",
-    "test": "yarn drop-test-db && yarn prep-db && jest"
+    "test": "yarn drop-test-db && NODE_ENV=test yarn prep-db && jest"
   },
   "lint-staged": {
     "src/**/*.{ts}": [
