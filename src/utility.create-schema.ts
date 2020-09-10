@@ -12,7 +12,7 @@ import Redis, { RedisOptions } from "ioredis";
 import { redisHostAndPortOpts } from "./redis";
 import { RedisPubSub } from "graphql-redis-subscriptions";
 import { AdminEditUserInfoResolver } from "./user.admin.edit-another-user_s-user-info";
-import { customAuthChecker } from "./utility.custom-authorization-checker";
+import { customAuthorizationChecker } from "./utility.custom-authorization-checker";
 
 const options: RedisOptions = {
   ...redisHostAndPortOpts,
@@ -35,6 +35,6 @@ export const createSchema = (): Promise<GraphQLSchema> =>
       RecipeResolver,
       RegisterResolver,
     ],
-    authChecker: customAuthChecker,
+    authChecker: customAuthorizationChecker,
     pubSub,
   });
