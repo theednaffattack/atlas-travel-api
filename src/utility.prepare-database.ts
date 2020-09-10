@@ -1,25 +1,14 @@
 import { DbMate } from "dbmate";
 import { readdir } from "fs";
+import { getConnectionString } from "./utility.get-connection-string";
 
 export async function runMigrations(): Promise<void> {
   // construct a dbmate instance using a database url string
   // see https://github.com/amacneil/dbmate#usage for more details
 
-  let dbConnectionString: string;
+  const dbConnectionString = getConnectionString(process.env.NODE_ENV);
 
-  if (process.env.NODE_ENV === undefined) {
-    throw new Error(
-      "The NODE_ENV var is undefined. Please set it to 'development', 'production' or 'test' and try again.",
-    );
-  }
-  if (process.env.NODE_ENV === "test") {
-    dbConnectionString = process.env.PG_TEST_CONNECTION_STRING as string;
-  }
-  if (process.env.NODE_ENV === "production") {
-    dbConnectionString = process.env.PG_PROD_CONNECTION_STRING as string;
-  } else {
-    dbConnectionString = process.env.PG_DEV_CONNECTION_STRING as string;
-  }
+  console.log("dbConnectionString".toUpperCase(), dbConnectionString);
 
   const dbmate = new DbMate(dbConnectionString);
 
@@ -37,12 +26,16 @@ export async function runMigrations(): Promise<void> {
   // invoke up, down, drop as necessary
   if (promiseFileLength !== undefined && promiseFileLength > 0) {
     try {
+      console.log(`DBMATE INITIATING MIGRATIONS\nRunning ${promiseFileLength} structural migration(s) running.`);
+
       await dbmate.up();
-      console.log(`DBMATE HAS BEEN STARTED\nRunning ${promiseFileLength} structural migration(s) running.`);
     } catch (dbmateError) {
       console.error("MIGRATION ERROR\n", dbmateError);
     }
   }
 }
 
-runMigrations().then(() => process.exit());
+runMigrations().then(() => {
+  console.log("OKAY RUN MIGRATIONS SCRIPT PROCESS ENDING");
+  process.exit();
+});
