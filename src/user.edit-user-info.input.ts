@@ -14,7 +14,4 @@ export class EditUserInput {
   @Field(() => String)
   @IsEmail()
   email?: string;
-
-  @Field(() => ID)
-  teamId!: string;
 }
