@@ -21,6 +21,7 @@ import { MyContext } from "./typings";
 import { logger } from "./logger";
 
 import { createSchema } from "./utility.create-schema";
+import { getConnectionString } from "./utility.get-connection-string";
 
 interface CorsOptionsProps {
   credentials: boolean;
@@ -61,14 +62,7 @@ async function bootstrap() {
   async function runMigrations() {
     // construct a dbmate instance using a database url string
     // see https://github.com/amacneil/dbmate#usage for more details
-    let dbmate;
-    if (process.env.NODE_ENV === "test") {
-      dbmate = new DbMate(process.env.PG_TEST_CONNECTION_STRING as string);
-    } else if (process.env.NODE_ENV === "production") {
-      dbmate = new DbMate(process.env.PG_PROD_CONNECTION_STRING as string);
-    } else {
-      dbmate = new DbMate(process.env.PG_DEV_CONNECTION_STRING as string);
-    }
+    const dbmate = new DbMate(getConnectionString(process.env.NODE_ENV));
 
     let totalFiles;
     fs.readdir(`${process.cwd()}/db/migrations`, async function (error, files) {
