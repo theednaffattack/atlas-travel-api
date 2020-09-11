@@ -4,7 +4,14 @@ import testPool from "../src/pg-pool-test";
 import * as db from "../src/zapatos/src";
 import { gqlCall } from "../src/test-utility.gql-call";
 
-const mockUser = {
+const adminUser = {
+  firstName: casual.first_name,
+  lastName: casual.last_name,
+  email: casual.email,
+  password: casual.password,
+};
+
+const generalUser = {
   firstName: casual.first_name,
   lastName: casual.last_name,
   email: casual.email,
@@ -13,47 +20,38 @@ const mockUser = {
 
 const newLastName = casual.last_name;
 
-const adminEditUserInfoMutation = `
-mutation AdminEditUserInfo($data: EditUserInput!){
-  adminEditUserInfo(data: $data){
+const adminEditAnotherUser_sInfo = `
+mutation AdminEditAnotherUser_sInfo($data: EditUserInput!) {
+  adminEditAnotherUser_sInfo(data: $data) {
     id
     firstName
-    lastName
-    email
   }
 }
+
 `;
 
 const variableValues = {
   data: {
-    firstName: mockUser.firstName,
+    firstName: generalUser.firstName,
     lastName: newLastName,
-    email: mockUser.email,
+    email: generalUser.email,
   },
 };
 
-describe("Edit user info", () => {
+describe("Edit another user's info", () => {
   it("user info to be changed", async (done) => {
-    const user = await db
-      .insert("user", {
-        firstName: mockUser.firstName,
-        lastName: mockUser.lastName,
-        email: mockUser.email,
-        password: mockUser.password,
-        confirmed: true,
-      })
-      .run(testPool);
+    const [user, userToo] = await db.insert("user", [adminUser, generalUser]).run(testPool);
 
     const response = await gqlCall({
-      source: adminEditUserInfoMutation,
+      source: adminEditAnotherUser_sInfo,
       userId: user.id,
       variableValues,
     });
 
     expect(response).toMatchObject({
       data: {
-        adminEditUserInfo: {
-          firstName: user.firstName,
+        adminEditAnotherUser_sInfo: {
+          firstName: userToo.firstName,
           lastName: newLastName,
         },
       },
