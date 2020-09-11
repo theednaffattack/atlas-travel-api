@@ -1,4 +1,4 @@
-import { Arg, Resolver, Mutation, UseMiddleware, Ctx } from "type-graphql";
+import { Arg, Resolver, Mutation, UseMiddleware, Ctx, Authorized } from "type-graphql";
 import { Pool } from "pg";
 
 import * as db from "./zapatos/src";
@@ -13,6 +13,7 @@ import { errorSavingInfoToDatabase } from "./utility.errors";
 @Resolver()
 export class AdminEditUserInfoResolver {
   @UseMiddleware(isAuth, logger)
+  @Authorized("ADMIN")
   @Mutation(() => User)
   async adminEditUserInfo(
     @Arg("data") { email, firstName, lastName }: EditUserInput,
