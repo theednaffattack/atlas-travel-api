@@ -11,11 +11,11 @@ import { getConnectionPool } from "./utility.get-connection-pool";
 import { errorSavingInfoToDatabase } from "./utility.errors";
 
 @Resolver()
-export class AdminEditUserInfoResolver {
+export class AdminEditAnotherUser_sInfoResolver {
   @UseMiddleware(isAuth, logger)
   @Authorized("ADMIN")
   @Mutation(() => User)
-  async adminEditUserInfo(
+  async adminEditAnotherUser_sInfo(
     @Arg("data") { email, firstName, lastName }: EditUserInput,
     @Ctx() ctx: MyContext,
   ): Promise<Partial<User>> {

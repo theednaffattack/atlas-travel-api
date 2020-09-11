@@ -11,7 +11,7 @@ import { RecipeResolver } from "./recipe.resolver";
 import Redis, { RedisOptions } from "ioredis";
 import { redisHostAndPortOpts } from "./redis";
 import { RedisPubSub } from "graphql-redis-subscriptions";
-import { AdminEditUserInfoResolver } from "./user.admin.edit-another-user_s-user-info";
+import { AdminEditAnotherUser_sInfoResolver } from "./user.admin.edit-another-user_s-user-info";
 import { customAuthorizationChecker } from "./utility.custom-authorization-checker";
 
 const options: RedisOptions = {
@@ -27,7 +27,7 @@ const pubSub = new RedisPubSub({
 export const createSchema = (): Promise<GraphQLSchema> =>
   buildSchema({
     resolvers: [
-      AdminEditUserInfoResolver,
+      AdminEditAnotherUser_sInfoResolver,
       ChangePasswordFromTokenResolver,
       ChangePasswordFromContextUseridResolver,
       MeResolver,
