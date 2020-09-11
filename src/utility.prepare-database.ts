@@ -8,8 +8,6 @@ export async function runMigrations(): Promise<void> {
 
   const dbConnectionString = getConnectionString(process.env.NODE_ENV);
 
-  console.log("dbConnectionString".toUpperCase(), dbConnectionString);
-
   const dbmate = new DbMate(dbConnectionString);
 
   const promiseFileLength = await new Promise<number>((resolve, reject) => {
