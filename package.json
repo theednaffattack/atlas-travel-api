@@ -50,7 +50,8 @@
     ],
     "parserOptions": {
       "ecmaVersion": 2018,
-      "sourceType": "module"
+      "sourceType": "module",
+      "project": "./tsconfig.json"
     },
     "rules": {
       "no-shadow": "warn",
@@ -65,7 +66,9 @@
       "no-unused-vars": "off",
       "@typescript-eslint/no-unused-vars": [
         "error"
-      ]
+      ],
+      "@typescript-eslint/await-thenable": 2,
+      "@typescript-eslint/no-floating-promises": 2
     }
   },
   "devDependencies": {
