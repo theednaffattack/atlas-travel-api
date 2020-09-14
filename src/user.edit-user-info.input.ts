@@ -15,3 +15,9 @@ export class EditUserInput {
   @IsEmail()
   email?: string;
 }
+
+@InputType()
+export class AdminEditUserInput extends EditUserInput {
+  @Field(() => ID)
+  userIdToBeChanged!: string;
+}
