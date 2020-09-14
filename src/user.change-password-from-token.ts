@@ -5,7 +5,7 @@ import * as db from "./zapatos/src";
 
 import pool from "../src/pg-pool";
 import { redis } from "./redis";
-import { User } from "./user.type";
+import { User, Roles } from "./user.type";
 import { forgotPasswordPrefix } from "./constants";
 import { MyContext } from "./typings";
 import { isAuth } from "./middleware.is-auth";
@@ -62,6 +62,19 @@ console.log("\nMANUAL TEST\nVIEW UPDATED", updatedUser)
     // login in the user
     ctx.req.session!.userId = user.id;
 
-    return {...user, name: user.firstName + " " + user.lastName, profileImageUri: user.profileImageUri ? user.profileImageUri : "'"};
+    
+
+    const rolesCache: Roles[] = [];
+
+    // It's difficult to get enums into the database
+    // properly so we create a cache, use a for-of loop to iterate
+    //  and cast as we loop.
+    if (user?.roles) {
+      for (const theRole of user.roles) {
+        rolesCache.push(theRole as Roles);
+      }
+    }
+
+    return {...user, roles: [...rolesCache], name: user.firstName + " " + user.lastName, profileImageUri: user.profileImageUri ? user.profileImageUri : "'"};
   }
 }
