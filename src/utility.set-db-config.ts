@@ -1,4 +1,5 @@
 import { highlight } from "sql-highlight";
+import { inspect } from "util";
 
 import * as db from "./zapatos/src";
 import { QuerySentInterface } from "./old-resolver-map";
@@ -13,20 +14,20 @@ export function setDbConfig(env: string | undefined): void {
       queryListener: (argThing: QuerySentInterface) => {
         const highlightThing = highlight(argThing.text, highlighterOptions);
         console.log(`
-        =====================
-        QUERY
-        ${highlightThing}
-        VALUES
-        ${argThing.values}
-        =====================
+=====================
+QUERY
+${highlightThing}
+VALUES
+${argThing.values}
+=====================
         `);
       },
       resultListener: (argThing) => {
         console.log(`
-        =====================
-        RESULT
-        ${argThing}
-        =====================
+=====================
+RESULT
+${inspect(argThing, false, 3, true)}
+=====================
         `);
       },
     });
