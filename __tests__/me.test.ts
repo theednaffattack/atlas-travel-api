@@ -2,6 +2,7 @@ import casual from "casual";
 
 import pool from "../src/pg-pool-test";
 import * as db from "../src/zapatos/src";
+import * as theSchema from "../src/zapatos/schema";
 import { gqlCall } from "../src/test-utility.gql-call";
 
 const mockUser = {
@@ -9,6 +10,7 @@ const mockUser = {
   lastName: casual.last_name,
   email: casual.email,
   password: casual.password,
+  roles: ["administrator", "app_user"] as theSchema.user.Insertable["roles"],
 };
 
 const meQuery = `
@@ -30,6 +32,7 @@ describe("Me", () => {
         lastName: mockUser.lastName,
         email: mockUser.email,
         password: mockUser.password,
+        roles: mockUser.roles,
         confirmed: true,
       })
       .run(pool);

@@ -5,7 +5,7 @@ import bcrypt from "bcrypt";
 import * as db from "./zapatos/src";
 import pool from "./pg-pool";
 
-import { User } from "./user.type";
+import { User, Roles } from "./user.type";
 import { MyContext } from "./typings";
 import { LoginInput } from "./login.input";
 import { errorSavingInfoToDatabase } from "./utility.errors";
@@ -43,9 +43,21 @@ export class LoginResolver {
     // all is well return the user we found
     context.req.session!.userId = user.id;
 
+    const rolesCache: Roles[] = [];
+
+    // It's difficult to get enums into the database
+    // properly so we create a cache, use a for-of loop to iterate
+    //  and cast as we loop.
+    if (user?.roles) {
+      for (const theRole of user.roles) {
+        rolesCache.push(theRole as Roles);
+      }
+    }
+
     const returnUser = {
       ...user,
       name: user.firstName + " " + user.lastName,
+      roles: [...rolesCache],
       profileImageUri: user.profileImageUri ? user.profileImageUri : "default-url",
     };
     return returnUser;

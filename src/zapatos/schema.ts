@@ -29,6 +29,10 @@ export type like_liketype_enum = 'activity' | 'hotel' | 'review';
 export namespace every {
   export type like_liketype_enum = ['activity', 'hotel', 'review'];
 }
+export type role = 'administrator' | 'app_user' | 'guest' | 'manager' | 'moderator';
+export namespace every {
+  export type role = ['administrator', 'app_user', 'guest', 'manager', 'moderator'];
+}
 
 /* --- tables --- */
 
@@ -488,6 +492,28 @@ export namespace saved {
   export type SQL = SQLExpression | SQLExpression[];
 }
 
+export namespace schema_migrations {
+  export type Table = 'schema_migrations';
+  export interface Selectable {
+    version: string;
+  }
+  export interface Insertable {
+    version: string | SQLFragment;
+  }
+  export interface Updatable extends Partial<Insertable> { }
+  export type Whereable = { [K in keyof Insertable]?: Exclude<Insertable[K] | ParentColumn, null | DefaultType> };
+  export type JSONSelectable = { [K in keyof Selectable]:
+    Date extends Selectable[K] ? Exclude<Selectable[K], Date> | DateString :
+    Date[] extends Selectable[K] ? Exclude<Selectable[K], Date[]> | DateString[] :
+    Selectable[K]
+  };
+  export type UniqueIndex = 'schema_migrations_pkey';
+  export type Column = keyof Selectable;
+  export type OnlyCols<T extends readonly Column[]> = Pick<Selectable, T[number]>;
+  export type SQLExpression = GenericSQLExpression | Table | Whereable | Column | ColumnNames<Updatable | (keyof Updatable)[]> | ColumnValues<Updatable>;
+  export type SQL = SQLExpression | SQLExpression[];
+}
+
 export namespace user {
   export type Table = 'user';
   export interface Selectable {
@@ -500,6 +526,7 @@ export namespace user {
     confirmed: boolean;
     createdAt: Date;
     updatedAt: Date;
+    roles: role[] | null;
   }
   export interface Insertable {
     id?: string | DefaultType | SQLFragment;
@@ -511,6 +538,7 @@ export namespace user {
     confirmed?: boolean | DefaultType | SQLFragment;
     createdAt?: Date | DateString | DefaultType | SQLFragment;
     updatedAt?: Date | DateString | DefaultType | SQLFragment;
+    roles?: role[] | null | DefaultType | SQLFragment;
   }
   export interface Updatable extends Partial<Insertable> { }
   export type Whereable = { [K in keyof Insertable]?: Exclude<Insertable[K] | ParentColumn, null | DefaultType> };
@@ -519,7 +547,7 @@ export namespace user {
     Date[] extends Selectable[K] ? Exclude<Selectable[K], Date[]> | DateString[] :
     Selectable[K]
   };
-  export type UniqueIndex = 'PK_cace4a159ff9f2512dd42373760' | 'UQ_e12875dfb3b1d92d7d7c5377e22' | 'UQ_3d328f5ff477a6bd7994cdbe823';
+  export type UniqueIndex = 'PK_cace4a159ff9f2512dd42373760' | 'UQ_e12875dfb3b1d92d7d7c5377e22';
   export type Column = keyof Selectable;
   export type OnlyCols<T extends readonly Column[]> = Pick<Selectable, T[number]>;
   export type SQLExpression = GenericSQLExpression | Table | Whereable | Column | ColumnNames<Updatable | (keyof Updatable)[]> | ColumnValues<Updatable>;
@@ -632,14 +660,14 @@ export namespace venue_seating {
 
 /* === cross-table types === */
 
-export type Table = comment.Table | event_entity.Table | hotel.Table | hotel_like.Table | image.Table | like.Table | message.Table | migrations.Table | photo.Table | photo_metadata.Table | reservation.Table | review.Table | room.Table | saved.Table | user.Table | user_followers_user.Table | venue.Table | venue_seating.Table;
-export type Selectable = comment.Selectable | event_entity.Selectable | hotel.Selectable | hotel_like.Selectable | image.Selectable | like.Selectable | message.Selectable | migrations.Selectable | photo.Selectable | photo_metadata.Selectable | reservation.Selectable | review.Selectable | room.Selectable | saved.Selectable | user.Selectable | user_followers_user.Selectable | venue.Selectable | venue_seating.Selectable;
-export type Whereable = comment.Whereable | event_entity.Whereable | hotel.Whereable | hotel_like.Whereable | image.Whereable | like.Whereable | message.Whereable | migrations.Whereable | photo.Whereable | photo_metadata.Whereable | reservation.Whereable | review.Whereable | room.Whereable | saved.Whereable | user.Whereable | user_followers_user.Whereable | venue.Whereable | venue_seating.Whereable;
-export type Insertable = comment.Insertable | event_entity.Insertable | hotel.Insertable | hotel_like.Insertable | image.Insertable | like.Insertable | message.Insertable | migrations.Insertable | photo.Insertable | photo_metadata.Insertable | reservation.Insertable | review.Insertable | room.Insertable | saved.Insertable | user.Insertable | user_followers_user.Insertable | venue.Insertable | venue_seating.Insertable;
-export type Updatable = comment.Updatable | event_entity.Updatable | hotel.Updatable | hotel_like.Updatable | image.Updatable | like.Updatable | message.Updatable | migrations.Updatable | photo.Updatable | photo_metadata.Updatable | reservation.Updatable | review.Updatable | room.Updatable | saved.Updatable | user.Updatable | user_followers_user.Updatable | venue.Updatable | venue_seating.Updatable;
-export type UniqueIndex = comment.UniqueIndex | event_entity.UniqueIndex | hotel.UniqueIndex | hotel_like.UniqueIndex | image.UniqueIndex | like.UniqueIndex | message.UniqueIndex | migrations.UniqueIndex | photo.UniqueIndex | photo_metadata.UniqueIndex | reservation.UniqueIndex | review.UniqueIndex | room.UniqueIndex | saved.UniqueIndex | user.UniqueIndex | user_followers_user.UniqueIndex | venue.UniqueIndex | venue_seating.UniqueIndex;
-export type Column = comment.Column | event_entity.Column | hotel.Column | hotel_like.Column | image.Column | like.Column | message.Column | migrations.Column | photo.Column | photo_metadata.Column | reservation.Column | review.Column | room.Column | saved.Column | user.Column | user_followers_user.Column | venue.Column | venue_seating.Column;
-export type AllTables = [comment.Table, event_entity.Table, hotel.Table, hotel_like.Table, image.Table, like.Table, message.Table, migrations.Table, photo.Table, photo_metadata.Table, reservation.Table, review.Table, room.Table, saved.Table, user.Table, user_followers_user.Table, venue.Table, venue_seating.Table];
+export type Table = comment.Table | event_entity.Table | hotel.Table | hotel_like.Table | image.Table | like.Table | message.Table | migrations.Table | photo.Table | photo_metadata.Table | reservation.Table | review.Table | room.Table | saved.Table | schema_migrations.Table | user.Table | user_followers_user.Table | venue.Table | venue_seating.Table;
+export type Selectable = comment.Selectable | event_entity.Selectable | hotel.Selectable | hotel_like.Selectable | image.Selectable | like.Selectable | message.Selectable | migrations.Selectable | photo.Selectable | photo_metadata.Selectable | reservation.Selectable | review.Selectable | room.Selectable | saved.Selectable | schema_migrations.Selectable | user.Selectable | user_followers_user.Selectable | venue.Selectable | venue_seating.Selectable;
+export type Whereable = comment.Whereable | event_entity.Whereable | hotel.Whereable | hotel_like.Whereable | image.Whereable | like.Whereable | message.Whereable | migrations.Whereable | photo.Whereable | photo_metadata.Whereable | reservation.Whereable | review.Whereable | room.Whereable | saved.Whereable | schema_migrations.Whereable | user.Whereable | user_followers_user.Whereable | venue.Whereable | venue_seating.Whereable;
+export type Insertable = comment.Insertable | event_entity.Insertable | hotel.Insertable | hotel_like.Insertable | image.Insertable | like.Insertable | message.Insertable | migrations.Insertable | photo.Insertable | photo_metadata.Insertable | reservation.Insertable | review.Insertable | room.Insertable | saved.Insertable | schema_migrations.Insertable | user.Insertable | user_followers_user.Insertable | venue.Insertable | venue_seating.Insertable;
+export type Updatable = comment.Updatable | event_entity.Updatable | hotel.Updatable | hotel_like.Updatable | image.Updatable | like.Updatable | message.Updatable | migrations.Updatable | photo.Updatable | photo_metadata.Updatable | reservation.Updatable | review.Updatable | room.Updatable | saved.Updatable | schema_migrations.Updatable | user.Updatable | user_followers_user.Updatable | venue.Updatable | venue_seating.Updatable;
+export type UniqueIndex = comment.UniqueIndex | event_entity.UniqueIndex | hotel.UniqueIndex | hotel_like.UniqueIndex | image.UniqueIndex | like.UniqueIndex | message.UniqueIndex | migrations.UniqueIndex | photo.UniqueIndex | photo_metadata.UniqueIndex | reservation.UniqueIndex | review.UniqueIndex | room.UniqueIndex | saved.UniqueIndex | schema_migrations.UniqueIndex | user.UniqueIndex | user_followers_user.UniqueIndex | venue.UniqueIndex | venue_seating.UniqueIndex;
+export type Column = comment.Column | event_entity.Column | hotel.Column | hotel_like.Column | image.Column | like.Column | message.Column | migrations.Column | photo.Column | photo_metadata.Column | reservation.Column | review.Column | room.Column | saved.Column | schema_migrations.Column | user.Column | user_followers_user.Column | venue.Column | venue_seating.Column;
+export type AllTables = [comment.Table, event_entity.Table, hotel.Table, hotel_like.Table, image.Table, like.Table, message.Table, migrations.Table, photo.Table, photo_metadata.Table, reservation.Table, review.Table, room.Table, saved.Table, schema_migrations.Table, user.Table, user_followers_user.Table, venue.Table, venue_seating.Table];
 
 
 export type SelectableForTable<T extends Table> = {
@@ -657,6 +685,7 @@ export type SelectableForTable<T extends Table> = {
   review: review.Selectable;
   room: room.Selectable;
   saved: saved.Selectable;
+  schema_migrations: schema_migrations.Selectable;
   user: user.Selectable;
   user_followers_user: user_followers_user.Selectable;
   venue: venue.Selectable;
@@ -678,6 +707,7 @@ export type WhereableForTable<T extends Table> = {
   review: review.Whereable;
   room: room.Whereable;
   saved: saved.Whereable;
+  schema_migrations: schema_migrations.Whereable;
   user: user.Whereable;
   user_followers_user: user_followers_user.Whereable;
   venue: venue.Whereable;
@@ -699,6 +729,7 @@ export type InsertableForTable<T extends Table> = {
   review: review.Insertable;
   room: room.Insertable;
   saved: saved.Insertable;
+  schema_migrations: schema_migrations.Insertable;
   user: user.Insertable;
   user_followers_user: user_followers_user.Insertable;
   venue: venue.Insertable;
@@ -720,6 +751,7 @@ export type UpdatableForTable<T extends Table> = {
   review: review.Updatable;
   room: room.Updatable;
   saved: saved.Updatable;
+  schema_migrations: schema_migrations.Updatable;
   user: user.Updatable;
   user_followers_user: user_followers_user.Updatable;
   venue: venue.Updatable;
@@ -741,6 +773,7 @@ export type UniqueIndexForTable<T extends Table> = {
   review: review.UniqueIndex;
   room: room.UniqueIndex;
   saved: saved.UniqueIndex;
+  schema_migrations: schema_migrations.UniqueIndex;
   user: user.UniqueIndex;
   user_followers_user: user_followers_user.UniqueIndex;
   venue: venue.UniqueIndex;
@@ -762,6 +795,7 @@ export type ColumnForTable<T extends Table> = {
   review: review.Column;
   room: room.Column;
   saved: saved.Column;
+  schema_migrations: schema_migrations.Column;
   user: user.Column;
   user_followers_user: user_followers_user.Column;
   venue: venue.Column;
@@ -783,6 +817,7 @@ export type SQLForTable<T extends Table> = {
   review: review.SQL;
   room: room.SQL;
   saved: saved.SQL;
+  schema_migrations: schema_migrations.SQL;
   user: user.SQL;
   user_followers_user: user_followers_user.SQL;
   venue: venue.SQL;

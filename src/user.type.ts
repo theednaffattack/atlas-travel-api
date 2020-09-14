@@ -1,4 +1,4 @@
-import { Field, ID, ObjectType, Root } from "type-graphql";
+import { Field, ID, ObjectType, registerEnumType, Root } from "type-graphql";
 
 import { EventEntity } from "./event.type";
 import { Image } from "./image.type";
@@ -8,20 +8,23 @@ import { Review } from "./review.type";
 import { Saved } from "./saved.type";
 import { HotelLike } from "./hotel-like";
 
-/**
- * User Entity (model)
- * @param {string} User.id - The ID of a User
- * @param {string} User.firstName - The given name of a User
- * @param {string} User.lastName - The family name (surname) of a User
- */
+export enum Roles {
+  ADMINISTRATOR = "administrator",
+  GUEST = "guest",
+  APP_USER = "app_user",
+  MODERATOR = "moderator",
+}
 
-// prettier-ignore
+registerEnumType(Roles, {
+  name: "Roles", // this one is mandatory
+  description: "App roles used for Authorization", // this one is optional
+});
+
 @ObjectType()
-export class User  {
+export class User {
   /**id field */
   @Field(() => ID, { nullable: true })
   id!: string;
-
 
   @Field()
   createdAt!: string;
@@ -38,7 +41,7 @@ export class User  {
   @Field({ nullable: true })
   email!: string;
 
-  @Field(() => [Message], { nullable: "itemsAndList"})
+  @Field(() => [Message], { nullable: "itemsAndList" })
   messages?: Message[];
 
   @Field(() => [EventEntity], { nullable: "itemsAndList" })
@@ -49,16 +52,15 @@ export class User  {
 
   @Field(() => [Saved], { nullable: true })
   savedItems?: Saved[];
-  
+
   @Field(() => [Reservation], { nullable: "itemsAndList" })
   reservations?: Reservation[];
-  
+
   @Field(() => [EventEntity], { nullable: "itemsAndList" })
   events?: EventEntity[];
 
   @Field(() => [Review], { nullable: true })
   reviews?: Review[];
-
 
   @Field(() => [User], { nullable: "itemsAndList" })
   followers?: User[];
@@ -83,8 +85,11 @@ export class User  {
   @Field()
   confirmed!: boolean;
 
-  @Field(() => [Image], {nullable: "itemsAndList"})
+  @Field(() => [Image], { nullable: "itemsAndList" })
   images?: Image[];
+
+  @Field(() => [Roles], { nullable: "items" })
+  roles!: Roles[];
 }
 
 @ObjectType()

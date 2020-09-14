@@ -13,3 +13,4 @@ deploy-server.sh
 
 # hide db seeding files
 src/utility.db-seed.overpass-hotels-sf.json
+zapatosconfig.json

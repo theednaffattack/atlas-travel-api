@@ -26,7 +26,13 @@ const variableValues = {
 
 describe("Register", () => {
   it("create user", async (done) => {
-    const response = await gqlCall({ source: registerMutation, variableValues });
+    let response;
+    try {
+      response = await gqlCall({ source: registerMutation, variableValues });
+    } catch (error) {
+      console.log("CREATE USER ERROR?", error);
+    }
+
     const { data: user } = variableValues;
     expect(response).toMatchObject({
       data: {

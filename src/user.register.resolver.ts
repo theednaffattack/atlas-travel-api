@@ -3,7 +3,7 @@ import bcrypt from "bcryptjs";
 import { Pool } from "pg";
 
 import * as db from "./zapatos/src";
-import { User } from "./user.type";
+import { User, Roles } from "./user.type";
 import { RegisterInput } from "./user.register.input";
 import { logger } from "./middleware.logger";
 import { sendPostmarkEmail } from "./utility.send-postmark-email";
@@ -39,12 +39,33 @@ export class RegisterResolver {
 
     const confEmail = await createConfirmationUrl(user.id);
 
+    const rolesCache: Roles[] = [];
+
+    // It's difficult to get enums into the database
+    // properly so we create a cache, use a for-of loop to iterate
+    //  and cast as we loop.
+    if (user?.roles) {
+      for (const theRole of user.roles) {
+        rolesCache.push(theRole as Roles);
+      }
+    }
+
     if (process.env["NODE_ENV"] === "production") {
       await sendPostmarkEmail(email, confEmail);
-      return { ...user, name: `${user.firstName} ${user.lastName}`, profileImageUri: user.profileImageUri ?? "no-uri" };
+      return {
+        ...user,
+        roles: [...rolesCache],
+        name: `${user.firstName} ${user.lastName}`,
+        profileImageUri: user.profileImageUri ?? "no-uri",
+      };
     } else {
       await sendEtherealEmail(email, confEmail);
-      return { ...user, name: `${user.firstName} ${user.lastName}`, profileImageUri: user.profileImageUri ?? "no-uri" };
+      return {
+        ...user,
+        roles: [...rolesCache],
+        name: `${user.firstName} ${user.lastName}`,
+        profileImageUri: user.profileImageUri ?? "no-uri",
+      };
     }
   }
 }
