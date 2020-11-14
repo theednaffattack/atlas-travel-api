@@ -6,6 +6,9 @@ node_modules
 # hide installer / package manager logs
 yarn-error.log
 
+# hide the build directory
+dist/
+
 
 # I can figure out a path based solution.
 secure
@@ -14,3 +17,5 @@ deploy-server.sh
 # hide db seeding files
 src/utility.db-seed.overpass-hotels-sf.json
 zapatosconfig.json
+
+postgresConfig/secret/
