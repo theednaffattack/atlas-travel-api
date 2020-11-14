@@ -3,7 +3,7 @@ import bcrypt from "bcryptjs";
 
 import * as db from "./zapatos/src";
 
-import pool from "../src/pg-pool";
+import pool from "./pg-pool";
 import { redis } from "./redis";
 import { User, Roles } from "./user.type";
 import { forgotPasswordPrefix } from "./constants";
