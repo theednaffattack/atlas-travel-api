@@ -1,61 +1,87 @@
-import express, { RequestHandler } from "express";
-import { ApolloServer, ApolloError, AuthenticationError } from "apollo-server-express";
-import depthLimit from "graphql-depth-limit";
-import compression from "compression";
-import { GraphQLFormattedError } from "graphql/error/formatError";
+/* eslint-disable no-console */
+/* eslint-disable prettier/prettier */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/explicit-function-return-type */
 import "reflect-metadata";
-import { GraphQLError } from "graphql";
+import { ApolloServer, ApolloError } from "apollo-server-express";
+import * as Express from "express";
+import { ArgumentValidationError } from "type-graphql";
+import fs from "fs";
+import { GraphQLFormattedError, GraphQLError } from "graphql";
 import session from "express-session";
 import connectRedis from "connect-redis";
 import internalIp from "internal-ip";
 import colors from "colors/safe";
 import http from "http";
 import * as dotenv from "dotenv";
+import { inspect } from "util";
 import { DbMate } from "dbmate";
-import fs from "fs";
-import { ExpressContext } from "apollo-server-express/dist/ApolloServer";
 
 import { redis } from "./redis";
 import { redisSessionPrefix } from "./constants";
+
 import { MyContext } from "./typings";
 import { logger } from "./logger";
 
 import { createSchema } from "./utility.create-schema";
 import { getConnectionString } from "./utility.get-connection-string";
 
+// import { createUsersLoader } from "./modules/utils/data-loaders/batch-user-loader";
+
+// loading .env file
+dotenv.config();
+
 interface CorsOptionsProps {
   credentials: boolean;
   origin: (origin: unknown, callback: unknown) => void;
 }
 
-async function bootstrap() {
-  dotenv.config();
+let port: number;
 
-  const app = express();
+if (process.env.ATAPI_VIRTUAL_PORT) {
+  port = parseInt(process.env.ATAPI_VIRTUAL_PORT, 10);
 
-  const RedisStore = connectRedis(session);
+  console.log("IF PROCESS.ENV.ATAPI_VIRTUAL_PORT", port);
+} else {
+  port = 9000;
+  console.log("ELSE", port);
+}
 
-  let sessionMiddleware: RequestHandler;
+const RedisStore = connectRedis(session);
 
-  const getContextFromHttpRequest = async (req: MyContext["req"], res: MyContext["res"]) => {
-    if (req && req.session) {
-      const { userId } = req.session;
-      return { userId, req, res };
-    }
-    return ["No session detected"];
+let sessionMiddleware: Express.RequestHandler;
+
+// const nodeEnvIsDev = process.env.NODE_ENV === "development";
+// const nodeEnvIs_NOT_Prod = process.env.NODE_ENV !== "production";
+const nodeEnvIsProd = process.env.NODE_ENV === "production";
+
+const getContextFromHttpRequest = async (req: MyContext["req"], res: MyContext["res"]) => {
+  if (req && req.session) {
+    const { teamId, userId } = req.session;
+    return { userId, req, res, teamId, connectionName: "default" };
+  }
+  return ["No session detected"];
+};
+
+const getContextFromSubscription = (connection: any) => {
+  const { userId } = connection.context.req.session;
+  return {
+    userId,
+    req: connection.context.req,
+    teamId: connection.context.teamId,
+    connectionName: "default",
   };
+};
 
-  const getContextFromSubscription = (connection: any) => {
-    const { userId } = connection.context.req.session;
-    return {
-      userId,
-      req: connection.context.req,
-    };
-  };
+// type IntegrationContext = {
+//   req: Express.Request;
+//   res: Express.Response;
+// }
 
-  let port: number;
-
-  const nodeEnvIsProd: boolean = process.env.NODE_ENV === "production";
+const main = async () => {
+  // createConnection is put into a try catch
+  // for docker-compose's sake. It needs to retry
+  // instead of quick-failing
 
   let retries = 5;
 
@@ -78,14 +104,16 @@ async function bootstrap() {
       try {
         await dbmate.up();
       } catch (dbmateError) {
-        console.error("MIGRATION ERROR\n", dbmateError);
+        console.error("MIGRATION ERROR\n", inspect(dbmateError, false, 3, true));
       }
     }
   }
 
   while (retries) {
     try {
-      runMigrations();
+      await runMigrations();
+      console.log("MIGRATIONS HAVE BEEN RUN");
+
       break;
     } catch (error) {
       console.error("SOME KIND OF ERROR CONNECTING OCCURRED\n", {
@@ -104,14 +132,74 @@ async function bootstrap() {
     }
   }
 
-  if (process.env.ATAPI_VIRTUAL_PORT) {
-    port = parseInt(process.env.ATAPI_VIRTUAL_PORT, 10);
-  } else {
-    port = 9000;
-    console.log("ELSE", port);
-  }
+  const schema = await createSchema();
+
+  const apolloServer = new ApolloServer({
+    schema,
+    playground: { version: "1.7.25", endpoint: "/graphql" },
+    introspection: true,
+    context: ({ req, res, connection }: any) => {
+      if (connection) {
+        return getContextFromSubscription(connection);
+        // return {
+        //   ...getContextFromSubscription(connection),
+        //   usersLoader: createUsersLoader()
+        // };
+      }
+
+      return getContextFromHttpRequest(req, res);
+
+      // return {
+      //   ...getContextFromHttpRequest(req, res),
+      //   usersLoader: createUsersLoader()
+      // };
+
+      // return { req, res, connection }
+    },
+    subscriptions: {
+      path: "/subscriptions",
+      onConnect: (_, ws: any) => {
+        return new Promise((res) =>
+          sessionMiddleware(ws.upgradeReq, {} as any, () => {
+            res({ req: ws.upgradeReq });
+          }),
+        );
+      },
+    },
+    // custom error handling from:
+    // https://github.com/19majkel94/type-graphql/issues/258
+    formatError: (error: GraphQLError): GraphQLFormattedError => {
+      if (error.originalError instanceof ApolloError) {
+        return error;
+      }
+
+      const { extensions = {}, locations, message, path } = error;
+
+      if (error.originalError instanceof ArgumentValidationError) {
+        extensions.code = "GRAPHQL_VALIDATION_FAILED";
+
+        return {
+          extensions,
+          locations,
+          message,
+          path,
+        };
+      }
+
+      //   error.message = "Internal Server Error";
+
+      return {
+        message: extensions?.exception?.stacktrace[0].replace("Error: ", "") ?? message,
+        path,
+        locations,
+        // extensions
+      };
+    },
+  });
 
   const homeIp = internalIp.v4.sync();
+
+  const app = Express.default();
 
   let hostUsed: string;
   let portUsed: number;
@@ -127,6 +215,7 @@ async function bootstrap() {
             `http://192.168.1.4:7000`,
           ]
         : [
+            `http://192.168.1.4:7000`,
             `http://localhost:3000`,
             `http://localhost:${port}`,
             `http://${homeIp}:3000`,
@@ -151,59 +240,11 @@ async function bootstrap() {
     },
   };
 
-  const apolloServer = new ApolloServer({
-    schema: await createSchema(),
-    playground: { version: "1.7.25", endpoint: "/graphql" },
-    introspection: true,
-    context: ({ req, res, connection }: ExpressContext) => {
-      if (connection) {
-        return getContextFromSubscription(connection);
-      }
-
-      return getContextFromHttpRequest(req, res);
-    },
-    subscriptions: {
-      path: "/subscriptions",
-      onConnect: (_: any, ws: any) => {
-        return new Promise((res) =>
-          sessionMiddleware(ws.upgradeReq, {} as any, () => {
-            res({ req: ws.upgradeReq });
-          }),
-        );
-      },
-    },
-    // custom error handling from:
-    // https://github.com/19majkel94/type-graphql/issues/258
-    formatError: (error: GraphQLError): GraphQLFormattedError => {
-      if (error.originalError instanceof ApolloError) {
-        return error;
-      }
-
-      const { extensions = {}, locations, message, path } = error;
-
-      if (error.originalError instanceof AuthenticationError) {
-        extensions.code = "AUTHENICATION_FAILED";
-
-        throw new AuthenticationError("Not authenticated");
-      }
-
-      //   error.message = "Internal Server Error";
-
-      return {
-        message: extensions?.exception?.stacktrace[0].replace("Error: ", "") ?? message,
-        path,
-        locations,
-        // extensions
-      };
-    },
-    validationRules: [depthLimit(7)],
-  });
-
   // needed to remove domain from our cookie
   // in non-production environments
   if (nodeEnvIsProd) {
     sessionMiddleware = session({
-      name: "atg",
+      name: process.env.COOKIE_NAME,
       secret: process.env.SESSION_SECRET as string,
       store: new RedisStore({
         client: redis as any,
@@ -215,12 +256,12 @@ async function bootstrap() {
         httpOnly: true,
         secure: true,
         maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days,
-        domain: ".eddienaff.dev",
+        domain: ".ednaff.dev",
       },
     });
   } else {
     sessionMiddleware = session({
-      name: "atg",
+      name: process.env.COOKIE_NAME,
       secret: process.env.SESSION_SECRET as string,
       store: new RedisStore({
         client: redis as any,
@@ -236,44 +277,38 @@ async function bootstrap() {
       },
     });
   }
-  app.use(compression());
-
-  app.use("/graphql", (req, res, next) => {
-    const startHrTime = process.hrtime();
-
-    res.on("finish", () => {
-      if (req.body && req.body.operationName) {
-        const elapsedHrTime = process.hrtime(startHrTime);
-        const elapsedTimeInMs = elapsedHrTime[0] * 1000 + elapsedHrTime[1] / 1e6;
-        logger.info({
-          type: "timing",
-          name: req.body.operationName,
-          ms: elapsedTimeInMs,
-        });
-      }
-    });
-
-    next();
-  });
 
   app.use(sessionMiddleware);
 
   apolloServer.applyMiddleware({ app, cors: corsOptions });
 
   const httpServer = http.createServer(app);
-
   apolloServer.installSubscriptionHandlers(httpServer);
 
-  // IMPORTED VERSION SERVER INIT
+  // needed for heroku deployment
+  app.enable("trust proxy");
+
+  // needed for heroku deployment
+  // they set the "x-forwarded-proto" header???
+  if (nodeEnvIsProd) {
+    app.use(function (req, res, next) {
+      if (req.header("x-forwarded-proto") !== "https") {
+        res.redirect("https://" + req.header("host") + req.url);
+      } else {
+        next();
+      }
+    });
+  }
+
   if (process.env.ATAPI_VIRTUAL_PORT) {
-    httpServer.listen(port, "0.0.0.0", () => {
-      console.log("LISTENING PORT", { port, env: process.env.PORT });
+    httpServer.listen(port, nodeEnvIsProd ? "0.0.0.0" : homeIp?.toString() ?? "0.0.0.0", () => {
+      console.log("LISTENING PORT", { port, env: process.env.ATAPI_VIRTUAL_PORT });
       if (httpServer) {
         const myHost = httpServer.address();
         if (myHost && typeof myHost !== "string") {
-          const { address, port: myPort } = myHost;
+          const { address, port } = myHost;
           hostUsed = address;
-          portUsed = myPort;
+          portUsed = port;
         } else {
           hostUsed = "not_defined";
           portUsed = -1;
@@ -281,34 +316,27 @@ async function bootstrap() {
         console.log("LET'S CHECK THE ADDRESS INFO", myHost);
       }
       console.log(`
-
-${colors.bgYellow(colors.black("    server started    "))}
-
-
-
-GraphQL Playground available at:
-    ${colors.green("localhost")}: http://${hostUsed}:${portUsed}${apolloServer.graphqlPath}
-          ${colors.green("LAN")}: http://${homeIp}:${portUsed}${apolloServer.graphqlPath}
-
-WebSocket subscriptions available at:
-${colors.green("atlas_travel server")}: ws://${homeIp}:${portUsed}${apolloServer.subscriptionsPath}
-
-
-`);
+  
+  ${colors.bgYellow(colors.black("    server started    "))}
+  
+  
+  
+  GraphQL Playground available at:
+      ${colors.green("localhost")}: http://${hostUsed}:${portUsed}${apolloServer.graphqlPath}
+            ${colors.green("LAN")}: http://${homeIp}:${portUsed}${apolloServer.graphqlPath}
+  
+  WebSocket subscriptions available at:
+  ${colors.green("atlas_travel server")}: ws://${homeIp}:${portUsed}${apolloServer.subscriptionsPath}
+  
+  
+  `);
     });
   } else {
     throw "Environment variables are undefined.";
   }
+};
 
-  // ORIGINAL SERVER INIT
-  // server.applyMiddleware({ app, path: "/graphql" });
-  // const httpServer = createServer(app);
-
-  // httpServer.listen({ port: 3030 }, (): void =>
-  //   console.log(
-  //     `\n🚀      GraphQL is now running on http://localhost:3030/graphql`
-  //   )
-  // );
-}
-
-bootstrap();
+main().catch((err) => {
+  // eslint-disable-next-line no-console
+  console.error("SERVER ERROR", { err });
+});
