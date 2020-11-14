@@ -41,7 +41,9 @@ export class LoginResolver {
     }
 
     // all is well return the user we found
+
     context.req.session!.userId = user.id;
+    // context.userId = user.id;
 
     const rolesCache: Roles[] = [];
 

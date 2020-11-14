@@ -16,11 +16,12 @@ export class MeResolver {
   async me(@Ctx() context: MyContext): Promise<User | undefined> {
     // if we can't find a userId on the current session => undefined
 
-    if (!context.req.session || !context.req.session.userId) {
+    // if (!context.req.session || !context.req.session.userId) {
+    if (!context.userId) {
       return undefined;
     }
 
-    const user = await db.selectOne("user", { id: context.req.session?.userId }).run(pool);
+    const user = await db.selectOne("user", { id: context.userId }).run(pool);
     const rolesCache: Roles[] = [];
 
     // It's difficult to get enums into the database

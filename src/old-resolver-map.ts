@@ -73,7 +73,7 @@ export const resolvers: IResolvers = {
     },
     async me(_parent, _args, context: MyContext): Promise<UserType> {
       // if we can't find a userId on the current session => undefined
-      if (!context.req.session!.userId) {
+      if (!context.userId) {
         return undefined;
       }
 
