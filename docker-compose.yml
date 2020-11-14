@@ -2,6 +2,7 @@ version: "3"
 services:
   at-redis:
     image: redis
+    container_name: ${REDIS_CONTAINER_NAME}
     volumes:
       - ${REDIS_DB_PATH}:/data
     # ports:
@@ -18,16 +19,15 @@ services:
       POSTGRES_PASS: ${POSTGRES_PASS}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_DBNAME: ${POSTGRES_DBNAME}
-      VIRTUAL_PORT: 7000
       POSTGRES_MULTIPLE_EXTENSIONS: postgis,hstore,postgis_topology,postgis_raster,pgrouting
-
     volumes:
       - ${DB_PATH}:/var/lib/postgresql/12/main
     ports:
-      - "5432:5432"
+      - "${DB_PORT_EXPOSED}:${DB_PORT_EXPOSED}"
 
   at-api:
     image: ${ATAPI_IMAGE}
+    container_name: ${API_CONTAINER_NAME}
     expose:
       - 80
     depends_on:
@@ -49,14 +49,12 @@ services:
       POSTGRES_PASS: ${POSTGRES_PASS}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_DBNAME: ${POSTGRES_DBNAME}
-      TYPEORM_SYNCHRONIZE: "false"
-      TYPEORM_LOGGING: "false"
       PRODUCTION_CLIENT_ORIGIN: ${PRODUCTION_CLIENT_ORIGIN}
       PRODUCTION_API_ORIGIN: ${PRODUCTION_API_ORIGIN}
       BUILD_FLAG: ${BUILD_FLAG}
       POSTMARK_API_TOKEN: ${POSTMARK_API_TOKEN}
     ports:
-      - "7000:7000"
+      - "${ATAPI_VIRTUAL_PORT}:${ATAPI_VIRTUAL_PORT}"
 
 networks:
   default:
