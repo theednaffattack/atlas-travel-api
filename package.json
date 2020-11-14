@@ -9,7 +9,7 @@
     "start": "yarn build && node -r dotenv/config dist/server.js",
     "build": "rimraf ./dist && tsc",
     "lint": "eslint '*/**/*.{js,ts,tsx}' --quiet --fix",
-    "killport": "node -r dotenv/config ./src/package-script.killport.js",
+    "killport": "ts-node -r dotenv/config ./src/package-script.killport.ts",
     "build:dev": "nodemon 'src/server.ts' --exec 'ts-node -r dotenv/config' src/server.ts -e ts,graphql",
     "dev": "yarn drop-dev-db && NODE_ENV=development yarn prep-db && yarn seed-hotels && nodemon 'src/server.ts' --exec 'ts-node -r dotenv/config' src/server.ts -e ts,graphql",
     "validate": " yarn lint && yarn test && yarn build",
