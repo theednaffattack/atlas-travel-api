@@ -34,6 +34,7 @@ export class EditMyOwnUserInfoResolver {
           ...updatedUser,
           name: updatedUser.firstName + " " + updatedUser.lastName,
           profileImageUri: updatedUser.profileImageUri ? updatedUser.profileImageUri : "",
+          roles: undefined,
         };
       }
       // If we could not update the user throw an error.
