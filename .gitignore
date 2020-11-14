@@ -19,3 +19,6 @@ src/utility.db-seed.overpass-hotels-sf.json
 zapatosconfig.json
 
 postgresConfig/secret/
+
+# Hide deployment details
+deploy.sh
