@@ -33,7 +33,7 @@ services:
     depends_on:
       - at-redis
       - at-db
-    command: ["./wait-for-it.sh", "at-db:5432", "--", "node", "/app/dist/index.js"]
+    command: ["./wait-for-it.sh", "at-db:5432", "--", "node", "/app/dist/server.js"]
     environment:
       VIRTUAL_PORT: ${ATAPI_VIRTUAL_PORT}
       VIRTUAL_HOST: ${ATAPI_VIRTUAL_HOST}
@@ -51,7 +51,6 @@ services:
       POSTGRES_DBNAME: ${POSTGRES_DBNAME}
       PRODUCTION_CLIENT_ORIGIN: ${PRODUCTION_CLIENT_ORIGIN}
       PRODUCTION_API_ORIGIN: ${PRODUCTION_API_ORIGIN}
-      BUILD_FLAG: ${BUILD_FLAG}
       POSTMARK_API_TOKEN: ${POSTMARK_API_TOKEN}
     ports:
       - "${ATAPI_VIRTUAL_PORT}:${ATAPI_VIRTUAL_PORT}"
