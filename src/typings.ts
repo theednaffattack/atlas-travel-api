@@ -12,7 +12,7 @@ interface GraphQlInputs {
 export interface MyContext {
   userId: user.Selectable["id"];
   gqlOpts: GraphQlInputs;
-  req: Request;
+  req: any; // Request;
   res: Response;
   next: NextFunction;
   usersLoader: any;
