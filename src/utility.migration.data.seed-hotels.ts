@@ -2,4 +2,12 @@
 
 import { bulkInsertHotels } from "./utility.seed-hotel-from-element.overpass-json";
 
-bulkInsertHotels();
+bulkInsertHotels().then(processExit).catch(catchError);
+
+function catchError(error: Error): void {
+  console.warn("Error running bulk insert.\n", error);
+}
+
+function processExit() {
+  process.exit();
+}

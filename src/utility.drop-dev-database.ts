@@ -5,4 +5,10 @@ export async function dropDevDatabase(): Promise<void> {
   await dbmate.drop();
 }
 
-dropDevDatabase().then(() => process.exit());
+dropDevDatabase()
+  .then(() => process.exit())
+  .catch(catchError);
+
+function catchError(error: Error): void {
+  console.warn("Error dropping dev database script\n", error);
+}
