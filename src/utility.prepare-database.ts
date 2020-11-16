@@ -11,7 +11,7 @@ export async function runMigrations(): Promise<void> {
   const dbmate = new DbMate(dbConnectionString);
 
   const promiseFileLength = await new Promise<number>((resolve, reject) => {
-    readdir(`${process.cwd()}/db/migrations`, function (error, files) {
+    readdir(`${process.cwd()}/src/db/migrations`, function (error, files) {
       if (error) {
         reject(error);
       } else {
@@ -33,7 +33,13 @@ export async function runMigrations(): Promise<void> {
   }
 }
 
-runMigrations().then(() => {
-  console.log("OKAY RUN MIGRATIONS SCRIPT PROCESS ENDING");
-  process.exit();
-});
+runMigrations()
+  .then(() => {
+    console.log("RUN MIGRATIONS SCRIPT PROCESS ENDING");
+    process.exit();
+  })
+  .catch(catchError);
+
+function catchError(error: Error): void {
+  console.warn("Error running migration script\n", error);
+}
