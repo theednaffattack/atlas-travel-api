@@ -16,6 +16,7 @@ import http from "http";
 import * as dotenv from "dotenv";
 import { inspect } from "util";
 import { DbMate } from "dbmate";
+import path from "path";
 
 import { redis } from "./redis";
 import { redisSessionPrefix } from "./constants";
@@ -39,13 +40,14 @@ interface CorsOptionsProps {
 let port: number;
 
 if (process.env.ATAPI_VIRTUAL_PORT) {
-  port = parseInt(process.env.ATAPI_VIRTUAL_PORT, 10);
+  port = parseInt(process.env.ATAPI_VIRTUAL_PORT);
 
   console.log("IF PROCESS.ENV.ATAPI_VIRTUAL_PORT", port);
 } else {
   port = 9000;
   console.log("ELSE", port);
 }
+console.log("CHECK PORT", port);
 
 const RedisStore = connectRedis(session);
 
@@ -91,7 +93,8 @@ const main = async () => {
     const dbmate = new DbMate(getConnectionString(process.env.NODE_ENV));
 
     let totalFiles;
-    fs.readdir(`${process.cwd()}/db/migrations`, async function (error, files) {
+
+    fs.readdir(path.join(__dirname, "db/migrations"), async function (error, files) {
       if (error) {
         throw new Error(`There was an unknown error accessing migration files\n ${error}`);
       } else {
@@ -109,11 +112,13 @@ const main = async () => {
     }
   }
 
+  // Loop to run migrations. Keep
+  // trying until
   while (retries) {
     try {
       await runMigrations();
-      console.log("MIGRATIONS HAVE BEEN RUN");
-
+      // If the migrations run successfully,
+      // exit the while loop.
       break;
     } catch (error) {
       console.error("SOME KIND OF ERROR CONNECTING OCCURRED\n", {
@@ -134,10 +139,12 @@ const main = async () => {
 
   const schema = await createSchema();
 
+  const apiVisibility = process.env.NODE_ENV === "production" ? "isHidden" : "isVisible";
+
   const apolloServer = new ApolloServer({
     schema,
-    playground: { version: "1.7.25", endpoint: "/graphql" },
-    introspection: true,
+    playground: apiVisibility === "isHidden" ? false : { version: "1.7.25", endpoint: "/graphql" },
+    introspection: apiVisibility === "isVisible",
     context: ({ req, res, connection }: any) => {
       if (connection) {
         return getContextFromSubscription(connection);
@@ -212,10 +219,8 @@ const main = async () => {
             `${process.env.PRODUCTION_CLIENT_ORIGIN}`,
             `${process.env.PRODUCTION_API_ORIGIN}`,
             `wss://${process.env.DOMAINS}`,
-            `http://192.168.1.4:7000`,
           ]
         : [
-            `http://192.168.1.4:7000`,
             `http://localhost:3000`,
             `http://localhost:${port}`,
             `http://${homeIp}:3000`,
@@ -256,7 +261,7 @@ const main = async () => {
         httpOnly: true,
         secure: true,
         maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days,
-        domain: ".ednaff.dev",
+        domain: process.env.COOKIE_DOMAIN,
       },
     });
   } else {
@@ -271,7 +276,6 @@ const main = async () => {
       saveUninitialized: false,
       cookie: {
         httpOnly: true,
-        // secure: true,
         maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days,
         domain: `${homeIp}`,
       },
@@ -300,9 +304,10 @@ const main = async () => {
     });
   }
 
+  // nodeEnvIsProd ? "0.0.0.0" : homeIp?.toString() ?? "0.0.0.0",
+
   if (process.env.ATAPI_VIRTUAL_PORT) {
-    httpServer.listen(port, nodeEnvIsProd ? "0.0.0.0" : homeIp?.toString() ?? "0.0.0.0", () => {
-      console.log("LISTENING PORT", { port, env: process.env.ATAPI_VIRTUAL_PORT });
+    httpServer.listen(parseInt(process.env.ATAPI_VIRTUAL_PORT, 10), () => {
       if (httpServer) {
         const myHost = httpServer.address();
         if (myHost && typeof myHost !== "string") {
