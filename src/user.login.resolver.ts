@@ -1,5 +1,5 @@
 import { Resolver, Ctx, Arg, Mutation } from "type-graphql";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 // import { AuthenticationError } from "apollo-server-express";
 
 import * as db from "./zapatos/src";
